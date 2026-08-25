@@ -81,6 +81,7 @@ jobs:
           display_report: true
           bot_id: "320747005"
           bot_name: "jw-company-developer-bot[bot]"
+          allowed_bots: "jw-company-developer-bot[bot]"
           prompt: |
             Read CLAUDE.md first and follow its conventions, including
             docs/standards/standards.md which it references.

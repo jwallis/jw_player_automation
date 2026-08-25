@@ -11,8 +11,10 @@ theoretical possibility (e.g. system file-picker dialogs and internal
 player-volume/timing state are marked No even though Appium can technically
 reach across apps, because they are flaky/opaque in practice).
 "Jira Issue ID" is the Jira key of the user story that caused this test case to
-be written. Set to TBD for all cases below since these predate the Jira
-integration; will be populated for real once stories move to Jira.
+be written. The 42 retroactive cases below were backfilled with real keys
+(PLAYER-NNN -> JWP-(NNN+3), a flat offset confirmed against 4 spot-checked
+imports spanning the full range) once the corresponding user stories were
+imported into Jira - no longer TBD.
 
 ## Test Data / Fixture Setup
 
@@ -51,7 +53,7 @@ TC IDs below reference files from this tree by name.
 ---
 ### PLAYER_TC-001: Selecting a root folder persists it and updates the button label
 **Story:** PLAYER-001
-**Jira Issue ID:** TBD
+**Jira Issue ID:** JWP-4
 **Priority:** High
 **Automatable (Appium):** No (system folder picker / DocumentsUI is out of app control)
 **Test Data:** Root/ folder from fixture setup
@@ -65,7 +67,7 @@ TC IDs below reference files from this tree by name.
 ---
 ### PLAYER_TC-002: Main screen prompts for a root folder when none is set
 **Story:** PLAYER-001
-**Jira Issue ID:** TBD
+**Jira Issue ID:** JWP-4
 **Priority:** Medium
 **Automatable (Appium):** Yes
 **Test Data:** Fresh app install / cleared app data (no root folder chosen)
@@ -76,7 +78,7 @@ TC IDs below reference files from this tree by name.
 ---
 ### PLAYER_TC-003: Folder contents are listed sorted, folders before files, with correct icons
 **Story:** PLAYER-002
-**Jira Issue ID:** TBD
+**Jira Issue ID:** JWP-5
 **Priority:** High
 **Automatable (Appium):** Yes
 **Test Data:** Root/ (contains FolderA, mixed_ext, many_items as folders; seek_test.mp3,
@@ -90,7 +92,7 @@ TC IDs below reference files from this tree by name.
 ---
 ### PLAYER_TC-004: Hidden files and folders (leading ".") are excluded from the listing
 **Story:** PLAYER-002
-**Jira Issue ID:** TBD
+**Jira Issue ID:** JWP-5
 **Priority:** Medium
 **Automatable (Appium):** Yes
 **Test Data:** Root/ containing .hidden_folder and .hidden_track.mp3
@@ -101,7 +103,7 @@ TC IDs below reference files from this tree by name.
 ---
 ### PLAYER_TC-005: Only supported audio extensions (mp3, m4a, wav) are listed as files
 **Story:** PLAYER-002
-**Jira Issue ID:** TBD
+**Jira Issue ID:** JWP-5
 **Priority:** High
 **Automatable (Appium):** Yes
 **Test Data:** mixed_ext/ (song.mp3, song.m4a, song.wav, song.flac, notes.txt)
@@ -112,7 +114,7 @@ TC IDs below reference files from this tree by name.
 ---
 ### PLAYER_TC-006: Tapping a folder opens it and shows its contents
 **Story:** PLAYER-003
-**Jira Issue ID:** TBD
+**Jira Issue ID:** JWP-6
 **Priority:** High
 **Automatable (Appium):** Yes
 **Test Data:** Root/FolderA/ (contains FolderA1, track_a1.mp3, track_a2.mp3)
@@ -124,7 +126,7 @@ TC IDs below reference files from this tree by name.
 ---
 ### PLAYER_TC-007: System back button navigates up one level from a subfolder
 **Story:** PLAYER-004
-**Jira Issue ID:** TBD
+**Jira Issue ID:** JWP-7
 **Priority:** High
 **Automatable (Appium):** Yes
 **Test Data:** Root/FolderA/FolderA1/
@@ -136,7 +138,7 @@ TC IDs below reference files from this tree by name.
 ---
 ### PLAYER_TC-008: System back button backgrounds the app when at the root folder
 **Story:** PLAYER-005
-**Jira Issue ID:** TBD
+**Jira Issue ID:** JWP-8
 **Priority:** High
 **Automatable (Appium):** Yes
 **Test Data:** Root/ (already selected as root folder)
@@ -149,7 +151,7 @@ TC IDs below reference files from this tree by name.
 ---
 ### PLAYER_TC-009: Subfolder name stays pinned at the top while its contents scroll, and tapping it navigates up
 **Story:** PLAYER-006
-**Jira Issue ID:** TBD
+**Jira Issue ID:** JWP-9
 **Priority:** Medium
 **Automatable (Appium):** Yes
 **Test Data:** many_items/ (30+ entries, overflows one screen)
@@ -164,7 +166,7 @@ TC IDs below reference files from this tree by name.
 ---
 ### PLAYER_TC-010: Scroll-edge arrows appear/disappear correctly as the list is scrolled
 **Story:** PLAYER-007
-**Jira Issue ID:** TBD
+**Jira Issue ID:** JWP-10
 **Priority:** Medium
 **Automatable (Appium):** Yes
 **Test Data:** many_items/ (30+ entries, overflows one screen)
@@ -184,7 +186,7 @@ TC IDs below reference files from this tree by name.
 ---
 ### PLAYER_TC-011: The currently playing file is highlighted in its folder's list
 **Story:** PLAYER-008
-**Jira Issue ID:** TBD
+**Jira Issue ID:** JWP-11
 **Priority:** Medium
 **Automatable (Appium):** Yes
 **Test Data:** Root/seek_test.mp3
@@ -196,7 +198,7 @@ TC IDs below reference files from this tree by name.
 ---
 ### PLAYER_TC-012: Revisiting a folder within the same session does not re-read it from disk
 **Story:** PLAYER-009
-**Jira Issue ID:** TBD
+**Jira Issue ID:** JWP-12
 **Priority:** Medium
 **Automatable (Appium):** No (cache-hit vs. disk-read is an internal timing/
                        implementation detail not exposed to UI automation)
@@ -210,7 +212,7 @@ TC IDs below reference files from this tree by name.
 ---
 ### PLAYER_TC-013: Drilling into a subfolder that was visible on screen loads instantly
 **Story:** PLAYER-010
-**Jira Issue ID:** TBD
+**Jira Issue ID:** JWP-13
 **Priority:** Medium
 **Automatable (Appium):** No (background-prefetch timing is an internal
                        implementation detail, not directly observable via UI)
@@ -226,7 +228,7 @@ TC IDs below reference files from this tree by name.
 ---
 ### PLAYER_TC-014: Tapping a file starts playback and queues its sibling files
 **Story:** PLAYER-011
-**Jira Issue ID:** TBD
+**Jira Issue ID:** JWP-14
 **Priority:** High
 **Automatable (Appium):** Yes
 **Test Data:** Root/FolderA/ (track_a1.mp3, track_a2.mp3)
@@ -240,7 +242,7 @@ TC IDs below reference files from this tree by name.
 ---
 ### PLAYER_TC-015: Play/pause button toggles playback and preserves position on resume
 **Story:** PLAYER-012
-**Jira Issue ID:** TBD
+**Jira Issue ID:** JWP-15
 **Priority:** High
 **Automatable (Appium):** Yes
 **Test Data:** Root/seek_test.mp3 (60s duration)
@@ -255,7 +257,7 @@ TC IDs below reference files from this tree by name.
 ---
 ### PLAYER_TC-016: Mini player shows the current track's title and artist
 **Story:** PLAYER-013
-**Jira Issue ID:** TBD
+**Jira Issue ID:** JWP-16
 **Priority:** Medium
 **Automatable (Appium):** Yes
 **Test Data:** "Long Track With A Really Long Title And Artist Name.mp3" (has
@@ -269,7 +271,7 @@ TC IDs below reference files from this tree by name.
 ---
 ### PLAYER_TC-017: Title/artist text that overflows the screen width scrolls (marquee)
 **Story:** PLAYER-013
-**Jira Issue ID:** TBD
+**Jira Issue ID:** JWP-16
 **Priority:** Low
 **Automatable (Appium):** No (verifying an animated scroll position needs
                        visual/frame comparison beyond standard element
@@ -283,7 +285,7 @@ TC IDs below reference files from this tree by name.
 ---
 ### PLAYER_TC-018: Elapsed time displays as MM:SS and updates during playback
 **Story:** PLAYER-014
-**Jira Issue ID:** TBD
+**Jira Issue ID:** JWP-17
 **Priority:** High
 **Automatable (Appium):** Yes
 **Test Data:** Root/seek_test.mp3 (60s duration)
@@ -297,7 +299,7 @@ TC IDs below reference files from this tree by name.
 ---
 ### PLAYER_TC-019: Tapping a point on the seek bar jumps playback to that position
 **Story:** PLAYER-015
-**Jira Issue ID:** TBD
+**Jira Issue ID:** JWP-18
 **Priority:** High
 **Automatable (Appium):** Yes
 **Test Data:** Root/seek_test.mp3 (60s duration, so the bar's midpoint = ~30s)
@@ -309,7 +311,7 @@ TC IDs below reference files from this tree by name.
 ---
 ### PLAYER_TC-020: Dragging the seek bar thumb scrubs and commits the position on release
 **Story:** PLAYER-016
-**Jira Issue ID:** TBD
+**Jira Issue ID:** JWP-19
 **Priority:** High
 **Automatable (Appium):** Yes
 **Test Data:** Root/seek_test.mp3 (60s duration)
@@ -322,7 +324,7 @@ TC IDs below reference files from this tree by name.
 ---
 ### PLAYER_TC-021: "Previous" button jumps to the previous track when within the first 3 seconds
 **Story:** PLAYER-017
-**Jira Issue ID:** TBD
+**Jira Issue ID:** JWP-20
 **Priority:** High
 **Automatable (Appium):** Yes
 **Test Data:** Root/FolderA/ (track_a1.mp3, track_a2.mp3)
@@ -334,7 +336,7 @@ TC IDs below reference files from this tree by name.
 ---
 ### PLAYER_TC-022: "Previous" button restarts the current track when more than 3 seconds have elapsed
 **Story:** PLAYER-017
-**Jira Issue ID:** TBD
+**Jira Issue ID:** JWP-20
 **Priority:** High
 **Automatable (Appium):** Yes
 **Test Data:** Root/seek_test.mp3 (60s duration)
@@ -346,7 +348,7 @@ TC IDs below reference files from this tree by name.
 ---
 ### PLAYER_TC-023: "Next" button on the last track in the queue wraps to the first track
 **Story:** PLAYER-017
-**Jira Issue ID:** TBD
+**Jira Issue ID:** JWP-20
 **Priority:** Medium
 **Automatable (Appium):** Yes
 **Test Data:** Root/FolderA/ (track_a1.mp3, track_a2.mp3 - 2-file queue)
@@ -359,7 +361,7 @@ TC IDs below reference files from this tree by name.
 ---
 ### PLAYER_TC-024: Holding the rewind button seeks backward and stops cleanly at the start
 **Story:** PLAYER-018
-**Jira Issue ID:** TBD
+**Jira Issue ID:** JWP-21
 **Priority:** Medium
 **Automatable (Appium):** Yes
 **Test Data:** Root/seek_test.mp3 (60s duration)
@@ -372,7 +374,7 @@ TC IDs below reference files from this tree by name.
 ---
 ### PLAYER_TC-025: Holding the fast-forward button to the end of a track advances to the next track
 **Story:** PLAYER-018
-**Jira Issue ID:** TBD
+**Jira Issue ID:** JWP-21
 **Priority:** Medium
 **Automatable (Appium):** Yes
 **Test Data:** Root/FolderA/ (track_a1.mp3 ~10s, track_a2.mp3)
@@ -385,7 +387,7 @@ TC IDs below reference files from this tree by name.
 ---
 ### PLAYER_TC-026: Releasing a hold-seek gesture mid-track resumes playback from the reached position
 **Story:** PLAYER-018
-**Jira Issue ID:** TBD
+**Jira Issue ID:** JWP-21
 **Priority:** Medium
 **Automatable (Appium):** Yes
 **Test Data:** Root/seek_test.mp3 (60s duration)
@@ -399,7 +401,7 @@ TC IDs below reference files from this tree by name.
 ---
 ### PLAYER_TC-027: Track auto-advances to the next queued track when it finishes naturally
 **Story:** PLAYER-019
-**Jira Issue ID:** TBD
+**Jira Issue ID:** JWP-22
 **Priority:** High
 **Automatable (Appium):** Yes
 **Test Data:** Root/FolderA/ (track_a1.mp3 ~10s, track_a2.mp3)
@@ -411,7 +413,7 @@ TC IDs below reference files from this tree by name.
 ---
 ### PLAYER_TC-028: Playback stops (without wrapping) when the last track finishes naturally
 **Story:** PLAYER-019
-**Jira Issue ID:** TBD
+**Jira Issue ID:** JWP-22
 **Priority:** Medium
 **Automatable (Appium):** Yes
 **Test Data:** Root/FolderA/ (track_a1.mp3, track_a2.mp3 - 2-file queue)
@@ -426,7 +428,7 @@ TC IDs below reference files from this tree by name.
 ---
 ### PLAYER_TC-029: Selecting a white noise file persists it and updates the button label
 **Story:** PLAYER-020
-**Jira Issue ID:** TBD
+**Jira Issue ID:** JWP-23
 **Priority:** Medium
 **Automatable (Appium):** No (system file picker / DocumentsUI is out of app control)
 **Test Data:** white_noise_sample.mp3
@@ -441,7 +443,7 @@ TC IDs below reference files from this tree by name.
 ---
 ### PLAYER_TC-030: Play/pause button toggles white noise playback
 **Story:** PLAYER-021
-**Jira Issue ID:** TBD
+**Jira Issue ID:** JWP-24
 **Priority:** Medium
 **Automatable (Appium):** Yes
 **Test Data:** white_noise_sample.mp3 already selected in Settings
@@ -453,7 +455,7 @@ TC IDs below reference files from this tree by name.
 ---
 ### PLAYER_TC-031: White noise loops continuously past the end of the file
 **Story:** PLAYER-021
-**Jira Issue ID:** TBD
+**Jira Issue ID:** JWP-24
 **Priority:** Low
 **Automatable (Appium):** No (verifying continued playback across a loop
                        boundary needs audio/position instrumentation, not
@@ -468,7 +470,7 @@ TC IDs below reference files from this tree by name.
 ---
 ### PLAYER_TC-032: Starting white noise stops the currently playing library track
 **Story:** PLAYER-022
-**Jira Issue ID:** TBD
+**Jira Issue ID:** JWP-25
 **Priority:** High
 **Automatable (Appium):** Yes
 **Test Data:** Root/seek_test.mp3; white_noise_sample.mp3 already selected
@@ -480,7 +482,7 @@ TC IDs below reference files from this tree by name.
 ---
 ### PLAYER_TC-033: Pressing play in the mini player while white noise is active restarts the last library track from 0:00
 **Story:** PLAYER-022
-**Jira Issue ID:** TBD
+**Jira Issue ID:** JWP-25
 **Priority:** Medium
 **Automatable (Appium):** Yes
 **Test Data:** Root/seek_test.mp3; white_noise_sample.mp3
@@ -496,7 +498,7 @@ TC IDs below reference files from this tree by name.
 ---
 ### PLAYER_TC-034: Splash screen shows "jw player" for 1.5 seconds on launch
 **Story:** PLAYER-023
-**Jira Issue ID:** TBD
+**Jira Issue ID:** JWP-26
 **Priority:** Low
 **Automatable (Appium):** Yes
 **Test Data:** None
@@ -510,7 +512,7 @@ TC IDs below reference files from this tree by name.
 ---
 ### PLAYER_TC-035: App uses a dark theme throughout, including system bars
 **Story:** PLAYER-024
-**Jira Issue ID:** TBD
+**Jira Issue ID:** JWP-27
 **Priority:** Low
 **Automatable (Appium):** No (color-scheme verification needs screenshot/
                        visual comparison tooling, not standard element
@@ -528,7 +530,7 @@ TC IDs below reference files from this tree by name.
 ---
 ### PLAYER_TC-036: Folder rows, file rows, and the pinned header announce "folder <name>" / "file <name>"
 **Story:** PLAYER-025
-**Jira Issue ID:** TBD
+**Jira Issue ID:** JWP-28
 **Priority:** High
 **Automatable (Appium):** Yes (locate via accessibility id / content-desc)
 **Test Data:** Root/FolderA/ (contains FolderA1, track_a1.mp3, track_a2.mp3)
@@ -545,7 +547,7 @@ TC IDs below reference files from this tree by name.
 ---
 ### PLAYER_TC-037: Scroll-edge arrows announce descriptive text, not silent/decorative
 **Story:** PLAYER-025
-**Jira Issue ID:** TBD
+**Jira Issue ID:** JWP-28
 **Priority:** Medium
 **Automatable (Appium):** Yes (locate via accessibility id / content-desc)
 **Test Data:** many_items/ (30+ entries, overflows one screen)
@@ -560,7 +562,7 @@ TC IDs below reference files from this tree by name.
 ---
 ### PLAYER_TC-038: Mini player's title, elapsed time, and seek bar are individually labeled
 **Story:** PLAYER-025
-**Jira Issue ID:** TBD
+**Jira Issue ID:** JWP-28
 **Priority:** Medium
 **Automatable (Appium):** Yes (locate via accessibility id / content-desc)
 **Test Data:** Root/seek_test.mp3
@@ -578,7 +580,7 @@ TC IDs below reference files from this tree by name.
 ---
 ### PLAYER_TC-039: Mini player play/pause button's description reflects current state
 **Story:** PLAYER-025
-**Jira Issue ID:** TBD
+**Jira Issue ID:** JWP-28
 **Priority:** High
 **Automatable (Appium):** Yes (locate via accessibility id / content-desc)
 **Test Data:** Root/seek_test.mp3
@@ -592,7 +594,7 @@ TC IDs below reference files from this tree by name.
 ---
 ### PLAYER_TC-040: Press-and-hold seek buttons are exposed as labeled, actionable buttons
 **Story:** PLAYER-025
-**Jira Issue ID:** TBD
+**Jira Issue ID:** JWP-28
 **Priority:** Medium
 **Automatable (Appium):** Yes (locate via accessibility id / content-desc;
                        actual hold-gesture activation via a screen
@@ -608,7 +610,7 @@ TC IDs below reference files from this tree by name.
 ---
 ### PLAYER_TC-041: Settings root-folder and white-noise-file buttons announce dynamic descriptions
 **Story:** PLAYER-025
-**Jira Issue ID:** TBD
+**Jira Issue ID:** JWP-28
 **Priority:** Medium
 **Automatable (Appium):** Yes (locate via accessibility id / content-desc)
 **Test Data:** Fresh app data (nothing selected yet); Root/ folder; white_noise_sample.mp3
@@ -625,7 +627,7 @@ TC IDs below reference files from this tree by name.
 ---
 ### PLAYER_TC-042: White noise play/pause button's description reflects current state
 **Story:** PLAYER-025
-**Jira Issue ID:** TBD
+**Jira Issue ID:** JWP-28
 **Priority:** Medium
 **Automatable (Appium):** Yes (locate via accessibility id / content-desc)
 **Test Data:** white_noise_sample.mp3 already selected in Settings

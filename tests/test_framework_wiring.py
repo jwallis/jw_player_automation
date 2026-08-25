@@ -27,17 +27,17 @@ def test_config_loads_and_merges_environment():
 
 def test_playback_service_reports_paused_state():
     driver_wrapper = MagicMock()
-    driver_wrapper.find_by.return_value.get_attribute.return_value = LibraryPage.PLAY
+    driver_wrapper.is_present.return_value = False  # pause_button not present -> not playing
     library_page = LibraryPage(driver_wrapper)
     service = PlaybackService(library_page)
 
-    assert library_page.get_play_pause_state() == LibraryPage.PLAY
+    assert library_page.is_playing() is False
     assert service is not None  # wiring didn't blow up constructing it
 
 
 def test_playback_service_validates_song_playing():
     driver_wrapper = MagicMock()
-    driver_wrapper.find_by.return_value.get_attribute.return_value = LibraryPage.PAUSE
+    driver_wrapper.is_present.return_value = True  # pause_button present -> playing
     driver_wrapper.find_by.return_value.text = "seek_test"
     library_page = LibraryPage(driver_wrapper)
     service = PlaybackService(library_page)
@@ -47,7 +47,7 @@ def test_playback_service_validates_song_playing():
 
 def test_playback_service_validation_fails_when_not_playing():
     driver_wrapper = MagicMock()
-    driver_wrapper.find_by.return_value.get_attribute.return_value = LibraryPage.PLAY
+    driver_wrapper.is_present.return_value = False
     library_page = LibraryPage(driver_wrapper)
     service = PlaybackService(library_page)
 
@@ -60,7 +60,7 @@ def test_playback_service_validation_fails_when_not_playing():
 
 def test_settings_service_reports_white_noise_state():
     driver_wrapper = MagicMock()
-    driver_wrapper.find_by.return_value.get_attribute.return_value = SettingsPage.WHITE_NOISE_PAUSE
+    driver_wrapper.is_present.return_value = True  # white_noise_pause_button present -> playing
     settings_page = SettingsPage(driver_wrapper)
     service = SettingsService(settings_page)
 

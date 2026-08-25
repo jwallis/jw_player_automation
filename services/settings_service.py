@@ -11,13 +11,13 @@ class SettingsService:
         self.settings_page = settings_page
 
     def play_white_noise(self) -> None:
-        if self.settings_page.get_white_noise_play_pause_state() == SettingsPage.WHITE_NOISE_PLAY:
-            self.settings_page.driver_wrapper.tap(SettingsPage.WHITE_NOISE_PLAY_PAUSE_BUTTON)
+        if not self.settings_page.is_white_noise_playing():
+            self.settings_page.driver_wrapper.tap(SettingsPage.WHITE_NOISE_PLAY_BUTTON)
 
     def pause_white_noise(self) -> None:
-        if self.settings_page.get_white_noise_play_pause_state() == SettingsPage.WHITE_NOISE_PAUSE:
-            self.settings_page.driver_wrapper.tap(SettingsPage.WHITE_NOISE_PLAY_PAUSE_BUTTON)
+        if self.settings_page.is_white_noise_playing():
+            self.settings_page.driver_wrapper.tap(SettingsPage.WHITE_NOISE_PAUSE_BUTTON)
 
     def validate_white_noise_is_playing(self) -> None:
-        if self.settings_page.get_white_noise_play_pause_state() != SettingsPage.WHITE_NOISE_PAUSE:
+        if not self.settings_page.is_white_noise_playing():
             raise ValidationError("Expected white noise to be playing, but it isn't")

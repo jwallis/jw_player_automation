@@ -19,12 +19,12 @@ class PlaybackService:
         self.library_page.driver_wrapper.tap(LibraryPage.file_tag(song_name))
 
     def pause_song(self) -> None:
-        if self.library_page.get_play_pause_state() == LibraryPage.PAUSE:
-            self.library_page.driver_wrapper.tap(LibraryPage.PLAY_PAUSE_BUTTON)
+        if self.library_page.is_playing():
+            self.library_page.driver_wrapper.tap(LibraryPage.PAUSE_BUTTON)
 
     def resume_song(self) -> None:
-        if self.library_page.get_play_pause_state() == LibraryPage.PLAY:
-            self.library_page.driver_wrapper.tap(LibraryPage.PLAY_PAUSE_BUTTON)
+        if not self.library_page.is_playing():
+            self.library_page.driver_wrapper.tap(LibraryPage.PLAY_BUTTON)
 
     def skip_song(self) -> None:
         self.library_page.driver_wrapper.tap(LibraryPage.NEXT_BUTTON)
@@ -42,7 +42,7 @@ class PlaybackService:
         self.library_page.driver_wrapper.press_and_hold(LibraryPage.SEEK_BACKWARD_BUTTON, seconds)
 
     def validate_song_is_playing(self, song_name: str) -> None:
-        if self.library_page.get_play_pause_state() != LibraryPage.PAUSE:
+        if not self.library_page.is_playing():
             raise ValidationError(f"Expected {song_name!r} to be playing, but nothing is")
         now_playing = self.library_page.get_now_playing_text()
         if song_name not in now_playing:

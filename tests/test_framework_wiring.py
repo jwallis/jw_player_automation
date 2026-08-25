@@ -13,6 +13,7 @@ from unittest.mock import MagicMock
 from config.config import load_config
 from pages.library_page import LibraryPage
 from pages.settings_page import SettingsPage
+from services.library_service import LibraryService
 from services.playback_service import PlaybackService
 from services.settings_service import SettingsService
 from exceptions.automation_errors import ValidationError
@@ -53,6 +54,28 @@ def test_playback_service_validation_fails_when_not_playing():
 
     try:
         service.validate_song_is_playing("seek_test")
+        assert False, "expected ValidationError"
+    except ValidationError:
+        pass
+
+
+def test_library_service_validates_empty_message_shown():
+    driver_wrapper = MagicMock()
+    driver_wrapper.find_by.return_value.text = "No music yet — choose a folder to get started!"
+    library_page = LibraryPage(driver_wrapper)
+    service = LibraryService(library_page)
+
+    service.validate_empty_library_message_shown()  # should not raise
+
+
+def test_library_service_validation_fails_when_message_mismatched():
+    driver_wrapper = MagicMock()
+    driver_wrapper.find_by.return_value.text = "set the root folder"
+    library_page = LibraryPage(driver_wrapper)
+    service = LibraryService(library_page)
+
+    try:
+        service.validate_empty_library_message_shown()
         assert False, "expected ValidationError"
     except ValidationError:
         pass

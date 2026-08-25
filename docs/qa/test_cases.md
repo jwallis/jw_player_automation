@@ -219,6 +219,18 @@ TC IDs below reference files from this tree by name.
     prefetch of its subfolders to complete.
  2. Tap "FolderA1".
     Expected: FolderA1's contents render with no visible loading delay.
+---
+### PLAYER_TC-043: Empty-library placeholder text is friendly and specific
+**Story:** JWP-29
+**Jira Issue ID:** JWP-29
+**Priority:** Low
+**Automatable (Appium):** Yes
+**Test Data:** Fresh app install / cleared app data (no root folder chosen)
+**Steps:**
+ 1. Launch the app on a fresh install, past the splash screen.
+    Expected: Main screen shows the placeholder text "No music yet — choose
+    a folder to get started!" (replacing the old "set the root folder"
+    text from PLAYER_TC-002).
 
 ## Epic: Library Playback
 

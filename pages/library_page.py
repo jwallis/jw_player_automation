@@ -27,6 +27,7 @@ class LibraryPage(BasePage):
     SCROLL_UP_INDICATOR = "scroll_up_indicator"
     SCROLL_DOWN_INDICATOR = "scroll_down_indicator"
     BACK_ROW = "back_row"
+    EMPTY_LIBRARY_MESSAGE = "empty_library_message"
 
     @staticmethod
     def folder_tag(name: str) -> str:
@@ -44,3 +45,6 @@ class LibraryPage(BasePage):
 
     def get_now_playing_text(self) -> str:
         return self.driver_wrapper.find_by(self.NOW_PLAYING_TEXT).text
+
+    def get_empty_library_message(self) -> str:
+        return self.driver_wrapper.find_by(self.EMPTY_LIBRARY_MESSAGE).text

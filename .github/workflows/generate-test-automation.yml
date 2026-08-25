@@ -167,6 +167,16 @@ jobs:
             confirm both pass. If either fails and you cannot fix it, make NO
             commit and explain the problem instead.
 
+            Run every `pytest`/`mypy` command as a normal synchronous,
+            foreground Bash call - one call that blocks until the command
+            finishes - never in the background, and never with a
+            `sleep`/polling loop waiting on a background task notification.
+            This CI environment does not deliver background-task completion
+            notifications the way an interactive session does, so starting
+            one and waiting for it will stall until the step times out. If
+            the command takes a while, that's fine - the tool call simply
+            returns when it's actually done.
+
             Your working directory is already the repo root for this entire
             session and stays that way. Every git command you run must start
             with exactly `git status`, `git diff`, `git log`, `git add`, or
@@ -264,43 +274,70 @@ jobs:
 
       - name: Notify Slack (test cases added)
         if: steps.verdict.outputs.verdict == 'CASE_ADDED' && success()
+        env:
+          ISSUE_KEY: ${{ github.event.client_payload.issue_key }}
+          SUMMARY: ${{ github.event.client_payload.summary }}
+          CASE_LINES: ${{ steps.summary.outputs.case_lines }}
         run: |
-          curl -sf -X POST -H 'Content-type: application/json' \
-            --data "{\"text\": \"[Test Case Generation] :white_check_mark: New case(s) for ${{ github.event.client_payload.issue_key }}: ${{ github.event.client_payload.summary }}${{ steps.summary.outputs.case_lines }}\"}" \
+          payload=$(jq -n --arg key "$ISSUE_KEY" --arg summary "$SUMMARY" --arg lines "$CASE_LINES" \
+            '{text: ("[Test Case Generation] :white_check_mark: New case(s) for " + $key + ": " + $summary + $lines)}')
+          curl -sf -X POST -H 'Content-type: application/json' --data "$payload" \
             "${{ secrets.SLACK_JW_PLAYER_CI_WEBHOOK_URL }}"
 
       - name: Notify Slack (automation functions written)
         if: steps.verdict.outputs.verdict == 'CASE_ADDED' && success() && steps.summary.outputs.function_lines != ''
+        env:
+          ISSUE_KEY: ${{ github.event.client_payload.issue_key }}
+          FUNCTION_LINES: ${{ steps.summary.outputs.function_lines }}
         run: |
-          curl -sf -X POST -H 'Content-type: application/json' \
-            --data "{\"text\": \"[Automation] :white_check_mark: New automation function(s) for ${{ github.event.client_payload.issue_key }}${{ steps.summary.outputs.function_lines }}\"}" \
+          payload=$(jq -n --arg key "$ISSUE_KEY" --arg lines "$FUNCTION_LINES" \
+            '{text: ("[Automation] :white_check_mark: New automation function(s) for " + $key + $lines)}')
+          curl -sf -X POST -H 'Content-type: application/json' --data "$payload" \
             "${{ secrets.SLACK_JW_PLAYER_CI_WEBHOOK_URL }}"
 
       - name: Notify Slack (no automation functions needed)
         if: steps.verdict.outputs.verdict == 'CASE_ADDED' && success() && steps.summary.outputs.function_lines == ''
+        env:
+          ISSUE_KEY: ${{ github.event.client_payload.issue_key }}
         run: |
-          curl -sf -X POST -H 'Content-type: application/json' \
-            --data "{\"text\": \"[Automation] New case(s) added for ${{ github.event.client_payload.issue_key }}, none were automatable — no scripts written.\"}" \
+          payload=$(jq -n --arg key "$ISSUE_KEY" \
+            '{text: ("[Automation] New case(s) added for " + $key + ", none were automatable — no scripts written.")}')
+          curl -sf -X POST -H 'Content-type: application/json' --data "$payload" \
             "${{ secrets.SLACK_JW_PLAYER_CI_WEBHOOK_URL }}"
 
       - name: Notify Slack (no case needed)
         if: steps.verdict.outputs.verdict == 'NO_CASE_NEEDED'
+        env:
+          ISSUE_KEY: ${{ github.event.client_payload.issue_key }}
+          SUMMARY: ${{ github.event.client_payload.summary }}
         run: |
-          curl -sf -X POST -H 'Content-type: application/json' \
-            --data "{\"text\": \"[Automation] No test case needed for ${{ github.event.client_payload.issue_key }}: ${{ github.event.client_payload.summary }}\"}" \
+          payload=$(jq -n --arg key "$ISSUE_KEY" --arg summary "$SUMMARY" \
+            '{text: ("[Automation] No test case needed for " + $key + ": " + $summary)}')
+          curl -sf -X POST -H 'Content-type: application/json' --data "$payload" \
             "${{ secrets.SLACK_JW_PLAYER_CI_WEBHOOK_URL }}"
 
       - name: Notify Slack (blocked)
         if: steps.verdict.outputs.verdict == 'BLOCKED'
+        env:
+          ISSUE_KEY: ${{ github.event.client_payload.issue_key }}
+          SUMMARY: ${{ github.event.client_payload.summary }}
+          REASON: ${{ steps.verdict.outputs.reason }}
+          PR_URL: ${{ github.event.client_payload.pr_url }}
         run: |
-          curl -sf -X POST -H 'Content-type: application/json' \
-            --data "{\"text\": \"[Automation] :x: Blocked, needs a human — ${{ github.event.client_payload.issue_key }}: ${{ github.event.client_payload.summary }}\nReason: ${{ steps.verdict.outputs.reason }}\nSource PR: ${{ github.event.client_payload.pr_url }}\"}" \
+          payload=$(jq -n --arg key "$ISSUE_KEY" --arg summary "$SUMMARY" --arg reason "$REASON" --arg pr_url "$PR_URL" \
+            '{text: ("[Automation] :x: Blocked, needs a human — " + $key + ": " + $summary + "\nReason: " + $reason + "\nSource PR: " + $pr_url)}')
+          curl -sf -X POST -H 'Content-type: application/json' --data "$payload" \
             "${{ secrets.SLACK_JW_PLAYER_CI_WEBHOOK_URL }}"
 
       - name: Notify Slack (failure)
         if: failure()
+        env:
+          ISSUE_KEY: ${{ github.event.client_payload.issue_key }}
+          SUMMARY: ${{ github.event.client_payload.summary }}
+          PR_URL: ${{ github.event.client_payload.pr_url }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
-          run_url="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-          curl -sf -X POST -H 'Content-type: application/json' \
-            --data "{\"text\": \"[Automation] :x: Failed — ${{ github.event.client_payload.issue_key }}: ${{ github.event.client_payload.summary }}\nRun: ${run_url}\nSource PR: ${{ github.event.client_payload.pr_url }}\"}" \
+          payload=$(jq -n --arg key "$ISSUE_KEY" --arg summary "$SUMMARY" --arg pr_url "$PR_URL" --arg run_url "$RUN_URL" \
+            '{text: ("[Automation] :x: Failed — " + $key + ": " + $summary + "\nRun: " + $run_url + "\nSource PR: " + $pr_url)}')
+          curl -sf -X POST -H 'Content-type: application/json' --data "$payload" \
             "${{ secrets.SLACK_JW_PLAYER_CI_WEBHOOK_URL }}"

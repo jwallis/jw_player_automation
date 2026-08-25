@@ -5,3 +5,5 @@ __pycache__/
 venv/
 .idea/
 .mypy_cache/
+.automation_verdict
+.story_diff.patch

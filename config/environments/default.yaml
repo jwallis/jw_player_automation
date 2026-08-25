@@ -1,0 +1,7 @@
+# Environment-specific values - see docs/standards/standards.md "Config vs.
+# environment". app_package/app_activity live here, not config.yaml, since a
+# future build variant (e.g. a debug build with a suffixed applicationId)
+# could genuinely need a different value per environment.
+appium_server_url: "http://127.0.0.1:4723"
+app_package: "com.joshuawallis.jwplayer"
+app_activity: ".MainActivity"

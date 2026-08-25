@@ -1,0 +1,6 @@
+# Everything that isn't environment-specific - see
+# docs/standards/standards.md "Config vs. environment".
+platform_name: "Android"
+automation_name: "UiAutomator2"
+implicit_wait_seconds: 10
+splash_screen_wait_seconds: 3

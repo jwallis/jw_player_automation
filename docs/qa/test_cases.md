@@ -11,10 +11,7 @@ theoretical possibility (e.g. system file-picker dialogs and internal
 player-volume/timing state are marked No even though Appium can technically
 reach across apps, because they are flaky/opaque in practice).
 "Jira Issue ID" is the Jira key of the user story that caused this test case to
-be written. The 42 retroactive cases below were backfilled with real keys
-(PLAYER-NNN -> JWP-(NNN+3), a flat offset confirmed against 4 spot-checked
-imports spanning the full range) once the corresponding user stories were
-imported into Jira - no longer TBD.
+be written.
 
 ## Test Data / Fixture Setup
 

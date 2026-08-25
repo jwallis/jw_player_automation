@@ -8,7 +8,7 @@ Appium/Python test automation framework for `jw_player` (a native Android MP3 pl
 
 ## Architecture
 
-Layered: `config/`, `driver/`, `pages/`, `services/`, `exceptions/`, `utils/`, `tests/` - see `docs/standards/standards.md` for the full naming rules and the reasoning behind the layering. Locates elements by `testTag`/resource-id (`jw_player`'s Compose `testTagsAsResourceId`), never `contentDescription` - that's a translatable string, unsafe to depend on for automation once the app supports more than one language.
+Python 3.11. Layered: `config/`, `driver/`, `pages/`, `services/`, `exceptions/`, `utils/`, `tests/` - see `docs/standards/standards.md` for the full naming rules and the reasoning behind the layering. Locates elements by `testTag`/resource-id (`jw_player`'s Compose `testTagsAsResourceId`), never `contentDescription` - that's a translatable string, unsafe to depend on for automation once the app supports more than one language. Every file starts with `from __future__ import annotations` (lets type hints use the `X | None` union syntax regardless of Python version) - keep doing that in new files. Dependencies go in `requirements.txt`, not hardcoded versions elsewhere.
 
 ## Commands
 

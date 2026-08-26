@@ -2,7 +2,7 @@
 # docs/standards/standards.md "Config vs. environment".
 platform_name: "Android"
 automation_name: "UiAutomator2"
-implicit_wait_seconds: 10
+implicit_wait_seconds: 20
 splash_screen_wait_seconds: 3
 # Repo-relative path to the Device Farm Extra Data fixture zip - a build
 # convention, not something that varies per environment.

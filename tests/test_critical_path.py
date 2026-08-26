@@ -13,8 +13,6 @@ backdoor - no force-stop/relaunch is needed to pick up the change.
 
 from __future__ import annotations
 
-import time
-
 from driver.driver_wrapper import DriverWrapper
 from pages.library_page import LibraryPage
 from pages.settings_page import SettingsPage
@@ -36,6 +34,5 @@ def test_critical_path_play_song_and_verify_playing(driver_wrapper: DriverWrappe
     service = PlaybackService(library_page)
     service.validate_elapsed_time_is_zero()
     service.play_song(SONG_PATH)
-    time.sleep(3)
-    service.validate_elapsed_time_has_advanced()
+    service.wait_for_elapsed_time_to_advance()
     service.validate_song_is_playing("song_a")

@@ -126,6 +126,32 @@ def test_playback_service_validation_fails_when_elapsed_time_has_not_advanced():
         pass
 
 
+def test_playback_service_wait_for_elapsed_time_to_advance_polls_until_advanced():
+    driver_wrapper = MagicMock()
+    library_page = LibraryPage(driver_wrapper)
+    service = PlaybackService(library_page)
+    service.get_elapsed_seconds = MagicMock(side_effect=[0, 0, 3])
+
+    with patch("services.playback_service.time.sleep") as mock_sleep:
+        service.wait_for_elapsed_time_to_advance(timeout_seconds=10, poll_interval=1)
+
+    assert service.get_elapsed_seconds.call_count == 3
+    assert mock_sleep.call_count == 2
+
+
+def test_playback_service_wait_for_elapsed_time_to_advance_times_out():
+    driver_wrapper = MagicMock()
+    library_page = LibraryPage(driver_wrapper)
+    service = PlaybackService(library_page)
+    service.get_elapsed_seconds = MagicMock(return_value=0)
+
+    try:
+        service.wait_for_elapsed_time_to_advance(timeout_seconds=0, poll_interval=0.01)
+        assert False, "expected ValidationError"
+    except ValidationError:
+        pass
+
+
 def test_playback_service_validation_fails_when_not_playing():
     driver_wrapper = MagicMock()
     driver_wrapper.is_present.return_value = False

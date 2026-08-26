@@ -4,7 +4,10 @@ here. Locators are raw UiAutomator selector expressions against the real
 system UI, confirmed live against a real picker session (see
 docs/ai/summary.md): the breadcrumb's first entry is always the true
 storage root, folder rows are android:id/title matched by display text,
-and "USE THIS FOLDER" / "ALLOW" are matched by their button text since
+and the "use this folder" / "allow" buttons are matched by their text
+(case-insensitively - confirmed live that real Device Farm hardware
+renders "Use this folder" where a local emulator rendered "USE THIS
+FOLDER", so an exact-case match is not portable across devices) since
 their resource-ids (android:id/button1) are reused across unrelated
 dialogs in the same flow.
 """
@@ -22,8 +25,8 @@ class SystemFolderPickerPage:
     ROOT_BREADCRUMB_SELECTOR = (
         'new UiSelector().resourceId("com.google.android.documentsui:id/breadcrumb_text").instance(0)'
     )
-    USE_THIS_FOLDER_SELECTOR = 'new UiSelector().text("USE THIS FOLDER")'
-    ALLOW_SELECTOR = 'new UiSelector().text("ALLOW")'
+    USE_THIS_FOLDER_SELECTOR = 'new UiSelector().textMatches("(?i)use this folder")'
+    ALLOW_SELECTOR = 'new UiSelector().textMatches("(?i)allow")'
 
     def __init__(self, driver_wrapper: DriverWrapper):
         self.driver_wrapper = driver_wrapper

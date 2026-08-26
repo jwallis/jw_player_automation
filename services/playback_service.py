@@ -82,3 +82,16 @@ class PlaybackService:
         elapsed = self.get_elapsed_seconds()
         if elapsed <= 0:
             raise ValidationError(f"Expected elapsed time to have advanced past 0s, but got {elapsed}s")
+
+    def wait_for_elapsed_time_to_advance(self, timeout_seconds: float = 10, poll_interval: float = 1) -> None:
+        """Polls elapsed time until it advances past 0s, instead of a single
+        fixed sleep-then-check - confirmed live that playback-start latency
+        is variable enough across runs/hardware for a fixed short wait to
+        flake. Raises the same ValidationError validate_elapsed_time_has_advanced
+        would if it never advances within the timeout."""
+        deadline = time.monotonic() + timeout_seconds
+        while time.monotonic() < deadline:
+            if self.get_elapsed_seconds() > 0:
+                return
+            time.sleep(poll_interval)
+        self.validate_elapsed_time_has_advanced()

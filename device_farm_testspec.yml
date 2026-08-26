@@ -1,10 +1,44 @@
 version: 0.1
 
+android_test_host: amazon_linux_2
+
 phases:
   install:
     commands:
+      - devicefarm-cli use python 3.11
+      - python3 --version
+      - devicefarm-cli use node 22
+      - devicefarm-cli use appium 3
+      - export APPIUM_BASE_PATH=
       - python3 -m pip install --upgrade pip
       - python3 -m pip install -r $DEVICEFARM_TEST_PACKAGE_PATH/requirements.txt
+
+  pre_test:
+    commands:
+      # --relaxed-security is required for mobile: shell, which the debug-only
+      # root-folder backdoor (utils/driver_util.py) depends on.
+      - |-
+        appium --base-path=$APPIUM_BASE_PATH --log-timestamp \
+          --log-no-colors --relaxed-security --default-capabilities \
+          "{\"appium:deviceName\": \"$DEVICEFARM_DEVICE_NAME\", \
+          \"platformName\": \"$DEVICEFARM_DEVICE_PLATFORM_NAME\", \
+          \"appium:app\": \"$DEVICEFARM_APP_PATH\", \
+          \"appium:udid\":\"$DEVICEFARM_DEVICE_UDID\", \
+          \"appium:platformVersion\": \"$DEVICEFARM_DEVICE_OS_VERSION\", \
+          \"appium:automationName\": \"UiAutomator2\"}" \
+          >> $DEVICEFARM_LOG_DIR/appium.log 2>&1 &
+
+      - |-
+        appium_initialization_time=0;
+        until curl --silent --fail "http://0.0.0.0:4723${APPIUM_BASE_PATH}/status"; do
+          if [[ $appium_initialization_time -gt 30 ]]; then
+            echo "Appium did not start within 30 seconds. Exiting...";
+            exit 1;
+          fi;
+          appium_initialization_time=$((appium_initialization_time + 1));
+          echo "Waiting for Appium to start on port 4723...";
+          sleep 1;
+        done;
 
   test:
     commands:
@@ -12,3 +46,6 @@ phases:
       - echo "=== /sdcard recursive listing (where did Extra Data land?) ==="
       - adb shell find /sdcard -maxdepth 6 2>&1 || true
       - python3 -m pytest -v -k "$PYTEST_TEST_FILTER"
+
+artifacts:
+  - $DEVICEFARM_LOG_DIR

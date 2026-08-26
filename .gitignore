@@ -7,3 +7,4 @@ venv/
 .mypy_cache/
 .automation_verdict
 .story_diff.patch
+logs/

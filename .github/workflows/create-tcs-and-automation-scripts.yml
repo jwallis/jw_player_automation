@@ -344,7 +344,7 @@ jobs:
           SUMMARY: ${{ github.event.client_payload.summary }}
         run: |
           payload=$(jq -n --arg key "$ISSUE_KEY" --arg summary "$SUMMARY" \
-            '{text: ("[Automation Script Generation] No test case needed for " + $key + ": " + $summary)}')
+            '{text: ("[Test Case Generation] No test case needed for " + $key + ": " + $summary)}')
           curl -sf -X POST -H 'Content-type: application/json' --data "$payload" \
             "${{ secrets.SLACK_JW_PLAYER_CI_WEBHOOK_URL }}"
 

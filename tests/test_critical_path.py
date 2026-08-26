@@ -3,49 +3,39 @@ device on every Device Farm invocation, alongside whatever's new that push -
 not gated on a specific PLAYER_TC entry, a fast general regression check
 that the core playback loop still works.
 
-Sets the root folder via the debug-only automation backdoor (see
-utils/driver_util.py's set_root_folder_via_backdoor) rather than the real
-Storage Access Framework picker, which test_cases.md already marks not
-automatable. The app is force-stopped and relaunched right after, since
-NavGraph.kt only reads the stored root-folder URI once, at first
-composition - it won't pick up a change made after the app's already
-running without a fresh launch.
+Sets the root folder by driving the real Storage Access Framework picker
+(SettingsService.set_root_folder), not the debug-only backdoor - confirmed
+live that the backdoor's raw file:// URI can see folders but not files
+under scoped storage, while a real SAF grant sees both. The real picker
+flow also fires the app's own onRootFolderChosen callback, so - unlike the
+backdoor - no force-stop/relaunch is needed to pick up the change.
 """
 
 from __future__ import annotations
 
 import time
 
-from config.config import load_config
-from driver.driver_factory import DriverFactory
+from driver.driver_wrapper import DriverWrapper
 from pages.library_page import LibraryPage
+from pages.settings_page import SettingsPage
 from services.playback_service import PlaybackService
-from utils.app_util import AppUtil
-from utils.driver_util import DriverUtil
+from services.settings_service import SettingsService
 
-ROOT_FOLDER_PATH = "/sdcard"
+ROOT_FOLDER_PATH = "device_farm_extra_data"
 SONG_PATH = "/genre_c/artist_a/song_a.mp3"
 
 
-def test_critical_path_play_song_and_verify_playing():
-    config = load_config()
-    driver_wrapper = DriverFactory.create(config)
-    try:
-        app_util = AppUtil(driver_wrapper, config)
-        # Cycle through one throwaway restart before relying on anything
-        # shown on screen - see AppUtil.restart_app.
-        app_util.restart_app()
+def test_critical_path_play_song_and_verify_playing(driver_wrapper: DriverWrapper):
+    library_page = LibraryPage(driver_wrapper)
+    library_page.open_settings()
 
-        DriverUtil(driver_wrapper).set_root_folder_via_backdoor(ROOT_FOLDER_PATH)
-        app_util.restart_app()
+    settings_page = SettingsPage(driver_wrapper)
+    SettingsService(settings_page).set_root_folder(ROOT_FOLDER_PATH)
+    settings_page.click_back()
 
-        library_page = LibraryPage(driver_wrapper)
-        service = PlaybackService(library_page)
-
-        service.validate_elapsed_time_is_zero()
-        service.play_song(SONG_PATH)
-        time.sleep(3)
-        service.validate_elapsed_time_has_advanced()
-        service.validate_song_is_playing("song_a")
-    finally:
-        DriverFactory.quit(driver_wrapper)
+    service = PlaybackService(library_page)
+    service.validate_elapsed_time_is_zero()
+    service.play_song(SONG_PATH)
+    time.sleep(3)
+    service.validate_elapsed_time_has_advanced()
+    service.validate_song_is_playing("song_a")

@@ -25,6 +25,9 @@ class SettingsPage(BasePage):
     def click_back(self) -> None:
         self.driver_wrapper.tap(self.BACK_BUTTON)
 
+    def click_root_folder_button(self) -> None:
+        self.driver_wrapper.tap(self.ROOT_FOLDER_BUTTON)
+
     def get_root_folder_label(self) -> str:
         return self.driver_wrapper.find_by(self.ROOT_FOLDER_BUTTON).text
 

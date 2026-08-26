@@ -45,17 +45,24 @@ class DriverWrapper:
         self.timeout_seconds = timeout_seconds
 
     def find_by(self, test_tag: str) -> WebElement:
-        locator = (AppiumBy.ANDROID_UIAUTOMATOR, _resource_id_selector(test_tag))
+        return self.find_by_uiautomator(_resource_id_selector(test_tag), locator=test_tag)
+
+    def find_by_uiautomator(self, selector: str, locator: str | None = None) -> WebElement:
+        """Locate by a raw UiAutomator selector expression (e.g.
+        'new UiSelector().text("...")') - for elements outside this app
+        (system UI, other apps) that have no testTag/resource-id of ours to
+        match on. `locator` is only used to label the error if not found;
+        defaults to the selector itself."""
         try:
             return WebDriverWait(self.driver, self.timeout_seconds).until(
-                EC.presence_of_element_located(locator)
+                EC.presence_of_element_located((AppiumBy.ANDROID_UIAUTOMATOR, selector))
             )
         except Exception as e:
             try:
                 page_source = self.driver.page_source
             except Exception:
                 page_source = None
-            raise ElementNotFoundError(test_tag, page_source) from e
+            raise ElementNotFoundError(locator or selector, page_source) from e
 
     def is_present(self, test_tag: str) -> bool:
         try:
@@ -66,6 +73,9 @@ class DriverWrapper:
 
     def tap(self, test_tag: str) -> None:
         self.find_by(test_tag).click()
+
+    def tap_uiautomator(self, selector: str, locator: str | None = None) -> None:
+        self.find_by_uiautomator(selector, locator).click()
 
     def press_and_hold(self, test_tag: str, hold_seconds: float) -> None:
         element = self.find_by(test_tag)

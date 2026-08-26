@@ -14,6 +14,7 @@ from unittest.mock import MagicMock, patch
 from config.config import load_config
 from pages.library_page import LibraryPage
 from pages.settings_page import SettingsPage
+from pages.system_folder_picker_page import SystemFolderPickerPage
 from services.library_service import LibraryService
 from services.playback_service import PlaybackService
 from services.settings_service import SettingsService
@@ -181,3 +182,47 @@ def test_app_util_restart_app_quits_then_launches_with_pauses():
     driver_wrapper.driver.activate_app.assert_called_once_with(config.app_package)
     assert mock_sleep.call_count == 3
     mock_sleep.assert_called_with(1)
+
+
+def test_app_util_reinstall_app_removes_then_installs():
+    driver_wrapper = MagicMock()
+    config = MagicMock()
+    app_util = AppUtil(driver_wrapper, config)
+
+    app_util.reinstall_app("/path/to/app-debug.apk")
+
+    driver_wrapper.driver.remove_app.assert_called_once_with(config.app_package)
+    driver_wrapper.driver.install_app.assert_called_once_with("/path/to/app-debug.apk")
+
+
+def test_system_folder_picker_page_navigates_and_confirms():
+    driver_wrapper = MagicMock()
+    picker = SystemFolderPickerPage(driver_wrapper)
+
+    picker.navigate_to_root()
+    picker.open_folder("device_farm_extra_data")
+    picker.use_this_folder()
+    picker.allow_access()
+
+    driver_wrapper.tap_uiautomator.assert_any_call(
+        SystemFolderPickerPage.ROOT_BREADCRUMB_SELECTOR, locator="picker root breadcrumb"
+    )
+    driver_wrapper.tap_uiautomator.assert_any_call(
+        'new UiSelector().resourceId("android:id/title").text("device_farm_extra_data")',
+        locator="picker folder row 'device_farm_extra_data'",
+    )
+    driver_wrapper.tap_uiautomator.assert_any_call(
+        SystemFolderPickerPage.USE_THIS_FOLDER_SELECTOR, locator="USE THIS FOLDER button"
+    )
+    driver_wrapper.tap_uiautomator.assert_any_call(SystemFolderPickerPage.ALLOW_SELECTOR, locator="ALLOW button")
+
+
+def test_settings_service_set_root_folder_drives_the_full_picker_flow():
+    driver_wrapper = MagicMock()
+    settings_page = SettingsPage(driver_wrapper)
+    service = SettingsService(settings_page)
+
+    service.set_root_folder("device_farm_extra_data")
+
+    driver_wrapper.tap.assert_called_once_with(SettingsPage.ROOT_FOLDER_BUTTON)
+    assert driver_wrapper.tap_uiautomator.call_count == 4

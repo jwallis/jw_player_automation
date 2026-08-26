@@ -48,5 +48,14 @@ class AppUtil:
         time.sleep(settle_seconds)
         self.driver_wrapper.driver.page_source
 
+    def reinstall_app(self, apk_path: str) -> None:
+        """Uninstall then reinstall from apk_path, for a genuinely fresh
+        install - no leftover SharedPreferences (e.g. a root folder set by
+        an earlier test in the same Device Farm job) or app data can
+        survive this. Leaves the app installed but not running; call
+        launch_app() afterward."""
+        self.driver_wrapper.driver.remove_app(self.config.app_package)
+        self.driver_wrapper.driver.install_app(apk_path)
+
     def get_current_activity(self) -> str:
         return self.driver_wrapper.driver.current_activity

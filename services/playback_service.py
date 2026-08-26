@@ -7,6 +7,8 @@ LibraryPage directly.
 
 from __future__ import annotations
 
+import time
+
 from pages.library_page import LibraryPage
 from exceptions.automation_errors import ValidationError
 
@@ -15,17 +17,25 @@ class PlaybackService:
     def __init__(self, library_page: LibraryPage):
         self.library_page = library_page
 
-    def play_song(self, song_path: str) -> None:
+    def play_song(self, song_path: str, settle_seconds: float = 1) -> None:
         """Accepts a full path like "/genre_c/artist_a/song_a.mp3" -
         navigates into each folder in turn, then taps the file. The
         extension is stripped before building the file's tag, matching
         DirectoryLister.displayName()'s testTag convention on the app side
-        (title = filename without its extension)."""
+        (title = filename without its extension).
+
+        Pauses briefly after each folder tap: confirmed live that tapping
+        two folders back-to-back with no settle time can silently miss the
+        second navigation - back_row (which mirrors currentFolderDoc.name)
+        stayed on the first folder even though the tap on the second one
+        returned successfully, meaning the click landed before Compose's
+        recomposition into the new folder's contents was ready."""
         parts = [part for part in song_path.split("/") if part]
         *folders, filename = parts
         song_name = filename.rsplit(".", 1)[0]
         for folder in folders:
             self.library_page.driver_wrapper.tap(LibraryPage.folder_tag(folder))
+            time.sleep(settle_seconds)
         self.library_page.driver_wrapper.tap(LibraryPage.file_tag(song_name))
 
     def pause_song(self) -> None:

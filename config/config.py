@@ -42,6 +42,12 @@ class AutomationConfig:
             "appium:automationName": self.automation_name,
             "appium:appPackage": self.app_package,
             "appium:appActivity": self.app_activity,
+            # Session creation must never depend on the app already being
+            # installed - AppUtil.reinstall_app() handles install state
+            # explicitly, inside the test, after the session exists. Without
+            # this, Appium's own session-start reset step fails outright
+            # whenever a prior test's remove_app() left the app uninstalled.
+            "appium:noReset": True,
         }
 
 

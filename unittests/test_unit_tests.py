@@ -27,6 +27,30 @@ def test_config_loads_and_merges_environment():
     assert config.capabilities["appium:appPackage"] == "com.joshuawallis.jwplayer"
 
 
+def test_playback_service_play_song_navigates_folders_then_taps_file():
+    driver_wrapper = MagicMock()
+    library_page = LibraryPage(driver_wrapper)
+    service = PlaybackService(library_page)
+
+    service.play_song("/genre_c/artist_a/song_a.mp3")
+
+    assert driver_wrapper.tap.call_args_list == [
+        (("folder_genre_c",),),
+        (("folder_artist_a",),),
+        (("file_song_a",),),
+    ]
+
+
+def test_playback_service_play_song_with_no_folders():
+    driver_wrapper = MagicMock()
+    library_page = LibraryPage(driver_wrapper)
+    service = PlaybackService(library_page)
+
+    service.play_song("song_a.mp3")
+
+    driver_wrapper.tap.assert_called_once_with("file_song_a")
+
+
 def test_playback_service_reports_paused_state():
     driver_wrapper = MagicMock()
     driver_wrapper.is_present.return_value = False  # pause_button not present -> not playing

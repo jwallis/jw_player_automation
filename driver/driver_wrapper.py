@@ -53,3 +53,7 @@ class DriverWrapper:
             "mobile: longClickGesture",
             {"elementId": element.id, "duration": int(hold_seconds * 1000)},
         )
+
+    def shell(self, command: str, args: list[str] | None = None) -> str:
+        result = self.driver.execute_script("mobile: shell", {"command": command, "args": args or []})
+        return str(result)

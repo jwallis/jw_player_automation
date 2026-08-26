@@ -15,7 +15,17 @@ class PlaybackService:
     def __init__(self, library_page: LibraryPage):
         self.library_page = library_page
 
-    def play_song(self, song_name: str) -> None:
+    def play_song(self, song_path: str) -> None:
+        """Accepts a full path like "/genre_c/artist_a/song_a.mp3" -
+        navigates into each folder in turn, then taps the file. The
+        extension is stripped before building the file's tag, matching
+        DirectoryLister.displayName()'s testTag convention on the app side
+        (title = filename without its extension)."""
+        parts = [part for part in song_path.split("/") if part]
+        *folders, filename = parts
+        song_name = filename.rsplit(".", 1)[0]
+        for folder in folders:
+            self.library_page.driver_wrapper.tap(LibraryPage.folder_tag(folder))
         self.library_page.driver_wrapper.tap(LibraryPage.file_tag(song_name))
 
     def pause_song(self) -> None:

@@ -10,5 +10,5 @@ app_activity: ".MainActivity"
 # this environment points at, same reasoning as appium_server_url above.
 # The test spec ARN isn't here - device_farm_testspec.yml gets uploaded
 # fresh on every run instead, so it can never silently go stale.
-device_farm_project_arn: ""
+device_farm_project_arn: "arn:aws:devicefarm:us-west-2:975669876094:project:1fd1f05b-98b4-4250-a13a-dc3ab055f2f3"
 device_farm_pool_arn: ""

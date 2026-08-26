@@ -210,7 +210,15 @@ jobs:
             notifications the way an interactive session does, so starting
             one and waiting for it will stall until the step times out. If
             the command takes a while, that's fine - the tool call simply
-            returns when it's actually done.
+            returns when it's actually done. The Bash tool's own default
+            timeout is 120 seconds - if a `pytest`/`mypy` call ever runs
+            that long, the tool itself will silently move it to the
+            background out from under you regardless of this instruction,
+            and there is no later turn in this session where a completion
+            notification for it will ever arrive. To prevent that, pass an
+            explicit `timeout` of at least 300000 (milliseconds) on every
+            `pytest`/`mypy` Bash call so it always runs to completion in the
+            same call.
 
             Your working directory is already the repo root for this entire
             session and stays that way. Every git command you run must start

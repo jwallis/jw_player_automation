@@ -181,9 +181,9 @@ jobs:
 
             This is a real device test, not a framework unit test — build
             the driver with `DriverFactory.create(load_config())` (see
-            `tests/test_critical_path.py` for the pattern: create it, use it
-            via a page/service object, `DriverFactory.quit()` it in a
-            `finally` block) and never `unittest.mock.MagicMock`. Mocking
+            `tests/test_library_browsing_scenarios.py` for the pattern:
+            create it, use it via a page/service object, `DriverFactory.quit()`
+            it in a `finally` block) and never `unittest.mock.MagicMock`. Mocking
             the driver is exactly what `unittests/` is for — a mocked
             scenario test here would trivially "pass" on a real device
             without exercising anything real.

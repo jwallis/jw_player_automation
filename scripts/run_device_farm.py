@@ -42,7 +42,12 @@ UPLOAD_POLL_SECONDS = 5
 RUN_POLL_SECONDS = 15
 TEST_SPEC_PATH = "device_farm_testspec.yml"
 MANIFEST_PATH = Path("last_generated_tests.txt")
-ALWAYS_RUN_FUNCTIONS = {"test_critical_path_play_song_and_verify_playing"}
+# No standing smoke test right now - the one that existed relied on a
+# debug-only root-folder backdoor and shared app state across scenario
+# tests in the same Device Farm job, which doesn't match how every other
+# real device test setup gets a fresh install. Revisit once that's solved
+# properly instead of always-running something built on a broken model.
+ALWAYS_RUN_FUNCTIONS: set[str] = set()
 
 
 def _pytest_filter_expression() -> str:

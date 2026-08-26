@@ -6,4 +6,4 @@ implicit_wait_seconds: 10
 splash_screen_wait_seconds: 3
 # Repo-relative path to the Device Farm Extra Data fixture zip - a build
 # convention, not something that varies per environment.
-device_farm_extra_data_path: "fixtures/device_farm_extra_data.zip"
+device_farm_extra_data_path: "testdata/device_farm_extra_data.zip"

@@ -9,7 +9,7 @@ them.
 
 from __future__ import annotations
 
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 
 from config.config import load_config
 from pages.library_page import LibraryPage
@@ -18,6 +18,7 @@ from services.library_service import LibraryService
 from services.playback_service import PlaybackService
 from services.settings_service import SettingsService
 from exceptions.automation_errors import ValidationError
+from utils.app_util import AppUtil
 
 
 def test_config_loads_and_merges_environment():
@@ -113,3 +114,17 @@ def test_settings_service_reports_white_noise_state():
     service = SettingsService(settings_page)
 
     service.validate_white_noise_is_playing()  # should not raise
+
+
+def test_app_util_restart_app_quits_then_launches_with_pauses():
+    driver_wrapper = MagicMock()
+    config = MagicMock()
+    app_util = AppUtil(driver_wrapper, config)
+
+    with patch("utils.app_util.time.sleep") as mock_sleep:
+        app_util.restart_app(settle_seconds=1)
+
+    driver_wrapper.driver.terminate_app.assert_called_once_with(config.app_package)
+    driver_wrapper.driver.activate_app.assert_called_once_with(config.app_package)
+    assert mock_sleep.call_count == 3
+    mock_sleep.assert_called_with(1)

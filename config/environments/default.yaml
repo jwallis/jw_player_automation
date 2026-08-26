@@ -8,6 +8,7 @@ app_activity: ".MainActivity"
 # Set during the interactive AWS Device Farm setup session - not secrets,
 # just resource identifiers, but genuinely tied to the AWS account/region
 # this environment points at, same reasoning as appium_server_url above.
+# The test spec ARN isn't here - device_farm_testspec.yml gets uploaded
+# fresh on every run instead, so it can never silently go stale.
 device_farm_project_arn: ""
 device_farm_pool_arn: ""
-device_farm_test_spec_arn: ""

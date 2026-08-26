@@ -56,7 +56,7 @@ jobs:
           run-id: ${{ steps.find-run.outputs.run_id }}
           github-token: ${{ steps.app-token.outputs.token }}
 
-      - name: Build scenario test package (critical path + what's new only)
+      - name: Build scenario test package
         run: python scripts/build_test_package.py
 
       - name: Run Device Farm

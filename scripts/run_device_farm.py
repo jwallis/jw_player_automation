@@ -1,11 +1,21 @@
-"""Uploads the app + test package (+ optional Extra Data fixture zip) to AWS
-Device Farm, schedules a run against the configured device pool, polls for
-completion, and writes a structured result to `device_farm_result.json` for
-the workflow's Slack step to read. Exits non-zero if the run's overall
-result isn't PASSED, so the calling workflow step fails accordingly.
+"""Uploads the app + test package + test spec (+ optional Extra Data fixture
+zip) to AWS Device Farm, schedules a run against the configured device
+pool, polls for completion, and writes a structured result to
+`device_farm_result.json` for the workflow's Slack step to read. Exits
+non-zero if the run's overall result isn't PASSED, so the calling workflow
+step fails accordingly.
 
-The Device Farm project/pool/test-spec ARNs and the Extra Data fixture path
-come from `config/environments/default.yaml` and `config/config.yaml` via
+The test package always contains the entire tests/ directory - which
+test(s) actually execute is decided at run time by device_farm_testspec.yml
+passing a pytest `-k` filter (built here from last_generated_tests.txt) via
+Device Farm's own environmentVariables mechanism, not by curating which
+files are in the zip. The test spec itself is uploaded fresh on every run,
+same as the app/test package/fixture zip - it's a real, versioned file in
+this repo, not a static pre-uploaded ARN that could silently go stale the
+moment someone edits it.
+
+The Device Farm project/pool ARNs and the Extra Data fixture path come from
+`config/environments/default.yaml` and `config/config.yaml` via
 `load_config()` - they're identifiers/paths, not secrets, set once during
 the AWS setup session. APK_PATH and TEST_PACKAGE_PATH are environment
 variables instead: they're computed fresh each run by earlier workflow
@@ -20,6 +30,7 @@ import json
 import os
 import sys
 import time
+from pathlib import Path
 from typing import Any
 
 import boto3
@@ -29,6 +40,19 @@ from config.config import load_config
 
 UPLOAD_POLL_SECONDS = 5
 RUN_POLL_SECONDS = 15
+TEST_SPEC_PATH = "device_farm_testspec.yml"
+MANIFEST_PATH = Path("last_generated_tests.txt")
+ALWAYS_RUN_FUNCTIONS = {"test_critical_path_play_song_and_verify_playing"}
+
+
+def _pytest_filter_expression() -> str:
+    function_names = set(ALWAYS_RUN_FUNCTIONS)
+    if MANIFEST_PATH.exists():
+        for line in MANIFEST_PATH.read_text().splitlines():
+            line = line.strip()
+            if line:
+                function_names.add(line.split("::", 1)[-1])
+    return " or ".join(sorted(function_names))
 
 
 def _require_env(name: str) -> str:
@@ -84,10 +108,9 @@ def main() -> int:
     config = load_config()
     project_arn = config.device_farm_project_arn
     pool_arn = config.device_farm_pool_arn
-    test_spec_arn = config.device_farm_test_spec_arn
-    if not (project_arn and pool_arn and test_spec_arn):
+    if not (project_arn and pool_arn):
         raise SystemExit(
-            "device_farm_project_arn/pool_arn/test_spec_arn aren't set in "
+            "device_farm_project_arn/pool_arn aren't set in "
             "config/environments/default.yaml yet - fill these in during the "
             "AWS setup session before this can run."
         )
@@ -105,8 +128,13 @@ def main() -> int:
     test_package_arn = _upload_and_wait(
         client, project_arn, test_package_path, "APPIUM_PYTHON_TEST_PACKAGE"
     )
+    test_spec_arn = _upload_and_wait(client, project_arn, TEST_SPEC_PATH, "APPIUM_PYTHON_TEST_SPEC")
 
-    configuration: dict[str, Any] = {}
+    configuration: dict[str, Any] = {
+        "environmentVariables": [
+            {"name": "PYTEST_TEST_FILTER", "value": _pytest_filter_expression()},
+        ],
+    }
     if extra_data_path:
         extra_data_arn = _upload_and_wait(client, project_arn, extra_data_path, "EXTERNAL_DATA")
         configuration["extraDataPackageArn"] = extra_data_arn
@@ -117,14 +145,13 @@ def main() -> int:
         "appArn": app_arn,
         "devicePoolArn": pool_arn,
         "name": run_name,
+        "configuration": configuration,
         "test": {
             "type": "APPIUM_PYTHON",
             "testSpecArn": test_spec_arn,
             "testPackageArn": test_package_arn,
         },
     }
-    if configuration:
-        schedule_kwargs["configuration"] = configuration
 
     response = client.schedule_run(**schedule_kwargs)
     run_arn = response["run"]["arn"]

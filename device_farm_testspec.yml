@@ -1,0 +1,12 @@
+version: 0.1
+
+phases:
+  install:
+    commands:
+      - python3 -m pip install --upgrade pip
+      - python3 -m pip install -r $DEVICEFARM_TEST_PACKAGE_PATH/requirements.txt
+
+  test:
+    commands:
+      - cd $DEVICEFARM_TEST_PACKAGE_PATH
+      - python3 -m pytest -v -k "$PYTEST_TEST_FILTER"

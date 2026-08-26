@@ -230,9 +230,10 @@ jobs:
               skipping any case marked not automatable. If no case was
               marked automatable, overwrite it with empty content — never
               leave a stale list from a previous run sitting there. A
-              separate workflow reads this file to know exactly which
-              file(s)/function(s) to package and run against a real device,
-              so it must exactly match what you actually wrote.
+              separate workflow reads this file to build a pytest `-k`
+              filter selecting exactly which function(s) actually run
+              against a real device, so it must exactly match what you
+              actually wrote.
 
               Then commit everything locally (test_cases.md,
               last_generated_tests.txt, any new/changed framework files, any

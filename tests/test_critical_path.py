@@ -21,7 +21,7 @@ from services.playback_service import PlaybackService
 from utils.app_util import AppUtil
 from utils.driver_util import DriverUtil
 
-ROOT_FOLDER_PATH = "/sdcard"
+ROOT_FOLDER_PATH = "/sdcard/device_farm_extra_data"
 SONG_PATH = "/genre_c/artist_a/song_a.mp3"
 
 

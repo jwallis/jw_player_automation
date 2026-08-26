@@ -116,11 +116,20 @@ jobs:
             numbering exactly.
 
             Decide:
-            - If this story's change is already covered by an existing test
-              case, or doesn't warrant its own case (e.g. a pure refactor,
-              CI/tooling change, or something with no user-observable
-              behavior), make NO changes to test_cases.md and write no test
-              script.
+            - If this story's change doesn't affect anything an existing
+              test case covers, and doesn't warrant a new one either (e.g.
+              a pure refactor, CI/tooling change, or something with no
+              user-observable behavior), make NO changes at all. Verdict:
+              NO_CASE_NEEDED.
+            - If this story's change makes an existing real-device test
+              script's assertion (in tests/, not unittests/) stale/wrong -
+              e.g. a literal string it hardcodes just changed - but the
+              underlying case is already documented in test_cases.md and
+              doesn't need a new entry, fix the existing test in place
+              (rename/edit it rather than leaving it alongside a new one;
+              never leave a stale assertion that will fail the moment this
+              runs against the real app) and make NO change to
+              test_cases.md itself. Verdict: EXISTING_TEST_FIXED.
             - Otherwise, append one new entry per genuinely distinct new
               scenario to the end of the relevant Epic section in
               docs/qa/test_cases.md (or add a new Epic section if none of the
@@ -140,20 +149,16 @@ jobs:
               case in the file references content-desc (that reflects a
               since-changed locator strategy on the app side; don't copy it,
               and don't go back and fix old entries — out of scope for this
-              task).
+              task). If this same change also makes some other already-
+              documented case's existing test stale, fix that too in this
+              same commit, same rules as EXISTING_TEST_FIXED above - a story
+              can both add a new case and fix an old one at once. Verdict:
+              CASE_ADDED.
 
-            If this story's change supersedes what an existing test script
-            or shared constant already asserts (e.g. a literal string that
-            changed, matching the pattern already in test_cases.md where a
-            newer case supersedes an older one's exact wording), update that
-            existing test/constant in the same commit - rename/edit the
-            existing test function in place rather than leaving it alongside
-            a new one. Never leave a stale assertion that will fail the
-            moment this runs against the real app. This works fine with how
-            test selection works: it's driven by the function name in
-            last_generated_tests.txt, not by whether the file is new, so an
-            updated existing file is picked up exactly the same as a new one
-            would be.
+            Test selection for a real device run is driven entirely by
+            function name via last_generated_tests.txt (see the verdict
+            rules below), not by whether a file is new - an updated existing
+            file is picked up exactly the same as a brand-new one.
 
             For each new case marked Automatable: Yes, write one test
             function in tests/ (a new file if none fits - see
@@ -222,11 +227,32 @@ jobs:
             You must end by writing a file named `.automation_verdict` at the
             repo root (it is git-ignored — never `git add` or commit it).
 
-            Line 1 must be exactly one of: NO_CASE_NEEDED, CASE_ADDED,
-            BLOCKED.
+            Line 1 must be exactly one of: NO_CASE_NEEDED,
+            EXISTING_TEST_FIXED, CASE_ADDED, BLOCKED.
 
             - NO_CASE_NEEDED: nothing else to write. Make no commit.
             - BLOCKED: line 2 is a short one-line reason. Make no commit.
+            - EXISTING_TEST_FIXED: one line per existing real-device test
+              function you fixed (tests/, never unittests/), each in the
+              exact format: `FIXED|<pytest node ID>`, where the node ID is
+              `tests/<file>.py::<function_name>` for the function as it
+              exists after your fix. Example:
+              EXISTING_TEST_FIXED
+              FIXED|tests/test_library_browsing_scenarios.py::test_PLAYER_TC_044_empty_library_placeholder_says_please
+
+              Also overwrite `last_generated_tests.txt` at the repo root
+              (committed, not git-ignored) with exactly those same node
+              IDs, one per line - if you fixed nothing in tests/ (only
+              something in unittests/), overwrite it with empty content.
+              Same reasoning as CASE_ADDED below: a separate workflow reads
+              this file to build a pytest `-k` filter, so it must exactly
+              match what you actually wrote.
+
+              Then commit everything locally (last_generated_tests.txt, the
+              fixed file(s) - NOT test_cases.md, nothing there changed) in
+              one commit referencing
+              ${{ github.event.client_payload.issue_key }}. Do NOT push - a
+              later workflow step does that.
             - CASE_ADDED: one line per new test case you added, each in the
               exact format (pipe-delimited, no extra spaces around the
               pipes):
@@ -235,24 +261,30 @@ jobs:
               CASE_ADDED
               CASE|PLAYER_TC-043|Selecting a nested subfolder updates breadcrumb|Yes|test_PLAYER_TC_043_selecting_nested_subfolder_updates_breadcrumb
 
+              If you also fixed an existing real-device test in this same
+              commit (per the Decide: rules above), add one
+              `FIXED|<pytest node ID>` line per fix too, same format as
+              EXISTING_TEST_FIXED.
+
               Also overwrite `last_generated_tests.txt` at the repo root
               (this one IS committed, not git-ignored) with one line per
               automatable case from the CASE lines above, each line a
               pytest node ID in the form `tests/<file>.py::<function_name>`
               (the actual relative path to the file the function lives in),
-              skipping any case marked not automatable. If no case was
-              marked automatable, overwrite it with empty content — never
-              leave a stale list from a previous run sitting there. A
-              separate workflow reads this file to build a pytest `-k`
-              filter selecting exactly which function(s) actually run
-              against a real device, so it must exactly match what you
-              actually wrote.
+              skipping any case marked not automatable, plus one line per
+              FIXED node ID if any. If nothing automatable resulted (no
+              automatable cases and nothing fixed), overwrite it with empty
+              content — never leave a stale list from a previous run
+              sitting there. A separate workflow reads this file to build a
+              pytest `-k` filter selecting exactly which function(s)
+              actually run against a real device, so it must exactly match
+              what you actually wrote.
 
               Then commit everything locally (test_cases.md,
               last_generated_tests.txt, any new/changed framework files, any
-              new test file) in one commit referencing
-              ${{ github.event.client_payload.issue_key }}. Do NOT push — a
-              later workflow step does that.
+              new test file, any fixed existing file) in one commit
+              referencing ${{ github.event.client_payload.issue_key }}. Do
+              NOT push — a later workflow step does that.
 
             Do not touch .github/workflows/, secrets, CLAUDE.md, or
             docs/standards/standards.md.
@@ -280,24 +312,32 @@ jobs:
               echo "AUTOMATION_CASES_EOF"
             } >> "$GITHUB_OUTPUT"
           fi
+          if [ "$verdict" = "CASE_ADDED" ] || [ "$verdict" = "EXISTING_TEST_FIXED" ]; then
+            {
+              echo "fixed<<AUTOMATION_FIXED_EOF"
+              grep '^FIXED|' .automation_verdict || true
+              echo "AUTOMATION_FIXED_EOF"
+            } >> "$GITHUB_OUTPUT"
+          fi
           rm -f .automation_verdict
 
       - name: Independently verify tests and types
-        if: steps.verdict.outputs.verdict == 'CASE_ADDED'
+        if: steps.verdict.outputs.verdict == 'CASE_ADDED' || steps.verdict.outputs.verdict == 'EXISTING_TEST_FIXED'
         run: |
           pip install -r requirements.txt
           pytest unittests/ -v
           mypy .
 
       - name: Push
-        if: steps.verdict.outputs.verdict == 'CASE_ADDED'
+        if: steps.verdict.outputs.verdict == 'CASE_ADDED' || steps.verdict.outputs.verdict == 'EXISTING_TEST_FIXED'
         run: git push origin main
 
       - name: Build Slack case summary
-        if: steps.verdict.outputs.verdict == 'CASE_ADDED'
+        if: steps.verdict.outputs.verdict == 'CASE_ADDED' || steps.verdict.outputs.verdict == 'EXISTING_TEST_FIXED'
         id: summary
         env:
           CASES: ${{ steps.verdict.outputs.cases }}
+          FIXED: ${{ steps.verdict.outputs.fixed }}
         run: |
           case_lines=""
           function_lines=""
@@ -308,6 +348,11 @@ jobs:
               function_lines="${function_lines}\n- ${fn_name}"
             fi
           done <<< "$CASES"
+          fixed_lines=""
+          while IFS='|' read -r _ node_id; do
+            [ -z "$node_id" ] && continue
+            fixed_lines="${fixed_lines}\n- ${node_id}"
+          done <<< "$FIXED"
           {
             echo "case_lines<<AUTOMATION_SUMMARY_EOF"
             echo -e "$case_lines"
@@ -315,6 +360,9 @@ jobs:
             echo "function_lines<<AUTOMATION_FUNCS_EOF"
             echo -e "$function_lines"
             echo "AUTOMATION_FUNCS_EOF"
+            echo "fixed_lines<<AUTOMATION_FIXED_LINES_EOF"
+            echo -e "$fixed_lines"
+            echo "AUTOMATION_FIXED_LINES_EOF"
           } >> "$GITHUB_OUTPUT"
 
       - name: Notify Slack (test cases added)
@@ -347,6 +395,17 @@ jobs:
         run: |
           payload=$(jq -n --arg key "$ISSUE_KEY" \
             '{text: ("[Automation Script Generation] New case(s) added for " + $key + ", none were automatable — no scripts written.")}')
+          curl -sf -X POST -H 'Content-type: application/json' --data "$payload" \
+            "${{ secrets.SLACK_JW_PLAYER_CI_WEBHOOK_URL }}"
+
+      - name: Notify Slack (existing tests fixed)
+        if: (steps.verdict.outputs.verdict == 'CASE_ADDED' || steps.verdict.outputs.verdict == 'EXISTING_TEST_FIXED') && success() && steps.summary.outputs.fixed_lines != ''
+        env:
+          ISSUE_KEY: ${{ github.event.client_payload.issue_key }}
+          FIXED_LINES: ${{ steps.summary.outputs.fixed_lines }}
+        run: |
+          payload=$(jq -n --arg key "$ISSUE_KEY" --arg lines "$FIXED_LINES" \
+            '{text: ("[Automation Script Generation] :wrench: Existing test(s) fixed for " + $key + $lines)}')
           curl -sf -X POST -H 'Content-type: application/json' --data "$payload" \
             "${{ secrets.SLACK_JW_PLAYER_CI_WEBHOOK_URL }}"
 

@@ -62,7 +62,7 @@ def test_playback_service_validation_fails_when_not_playing():
 
 def test_library_service_validates_empty_message_shown():
     driver_wrapper = MagicMock()
-    driver_wrapper.find_by.return_value.text = "No music yet — choose a folder to get started!"
+    driver_wrapper.find_by.return_value.text = "No music yet. Please choose a folder to get started!"
     library_page = LibraryPage(driver_wrapper)
     service = LibraryService(library_page)
 

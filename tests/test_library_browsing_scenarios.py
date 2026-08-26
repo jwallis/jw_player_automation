@@ -13,9 +13,9 @@ from pages.library_page import LibraryPage
 from services.library_service import LibraryService
 
 
-def test_PLAYER_TC_043_empty_library_placeholder_shows_friendly_message():
+def test_PLAYER_TC_044_empty_library_placeholder_says_please():
     driver_wrapper = MagicMock()
-    driver_wrapper.find_by.return_value.text = "No music yet — choose a folder to get started!"
+    driver_wrapper.find_by.return_value.text = "No music yet. Please choose a folder to get started!"
     library_page = LibraryPage(driver_wrapper)
     service = LibraryService(library_page)
 

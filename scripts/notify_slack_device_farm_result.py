@@ -27,7 +27,7 @@ def main() -> int:
     result_path = Path("device_farm_result.json")
 
     if not result_path.exists():
-        text = "[Appium] :x: Failed — Device Farm run did not produce a result file."
+        text = "[Automation Execution] :x: Failed — Device Farm run did not produce a result file."
         requests.post(webhook_url, json={"text": text})
         return 0
 
@@ -35,7 +35,7 @@ def main() -> int:
     run_result = summary["run_result"]
     icon = RESULT_ICONS.get(run_result, ":warning:")
 
-    lines = [f"[Appium] {icon} Run {run_result} — {summary['console_url']}"]
+    lines = [f"[Automation Execution] {icon} Run {run_result} — {summary['console_url']}"]
     for test in summary["tests"]:
         test_icon = RESULT_ICONS.get(test["result"], ":warning:")
         lines.append(f"{test_icon} {test['name']}: {test['result']}")

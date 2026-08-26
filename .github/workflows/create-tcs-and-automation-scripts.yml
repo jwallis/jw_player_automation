@@ -323,7 +323,7 @@ jobs:
           FUNCTION_LINES: ${{ steps.summary.outputs.function_lines }}
         run: |
           payload=$(jq -n --arg key "$ISSUE_KEY" --arg lines "$FUNCTION_LINES" \
-            '{text: ("[Automation] :white_check_mark: New automation function(s) for " + $key + $lines)}')
+            '{text: ("[Automation Script Generation] :white_check_mark: New automation function(s) for " + $key + $lines)}')
           curl -sf -X POST -H 'Content-type: application/json' --data "$payload" \
             "${{ secrets.SLACK_JW_PLAYER_CI_WEBHOOK_URL }}"
 
@@ -333,7 +333,7 @@ jobs:
           ISSUE_KEY: ${{ github.event.client_payload.issue_key }}
         run: |
           payload=$(jq -n --arg key "$ISSUE_KEY" \
-            '{text: ("[Automation] New case(s) added for " + $key + ", none were automatable — no scripts written.")}')
+            '{text: ("[Automation Script Generation] New case(s) added for " + $key + ", none were automatable — no scripts written.")}')
           curl -sf -X POST -H 'Content-type: application/json' --data "$payload" \
             "${{ secrets.SLACK_JW_PLAYER_CI_WEBHOOK_URL }}"
 
@@ -344,7 +344,7 @@ jobs:
           SUMMARY: ${{ github.event.client_payload.summary }}
         run: |
           payload=$(jq -n --arg key "$ISSUE_KEY" --arg summary "$SUMMARY" \
-            '{text: ("[Automation] No test case needed for " + $key + ": " + $summary)}')
+            '{text: ("[Automation Script Generation] No test case needed for " + $key + ": " + $summary)}')
           curl -sf -X POST -H 'Content-type: application/json' --data "$payload" \
             "${{ secrets.SLACK_JW_PLAYER_CI_WEBHOOK_URL }}"
 
@@ -357,7 +357,7 @@ jobs:
           PR_URL: ${{ github.event.client_payload.pr_url }}
         run: |
           payload=$(jq -n --arg key "$ISSUE_KEY" --arg summary "$SUMMARY" --arg reason "$REASON" --arg pr_url "$PR_URL" \
-            '{text: ("[Automation] :x: Blocked, needs a human — " + $key + ": " + $summary + "\nReason: " + $reason + "\nSource PR: " + $pr_url)}')
+            '{text: ("[Automation Script Generation] :x: Blocked, needs a human — " + $key + ": " + $summary + "\nReason: " + $reason + "\nSource PR: " + $pr_url)}')
           curl -sf -X POST -H 'Content-type: application/json' --data "$payload" \
             "${{ secrets.SLACK_JW_PLAYER_CI_WEBHOOK_URL }}"
 
@@ -370,6 +370,6 @@ jobs:
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
           payload=$(jq -n --arg key "$ISSUE_KEY" --arg summary "$SUMMARY" --arg pr_url "$PR_URL" --arg run_url "$RUN_URL" \
-            '{text: ("[Automation] :x: Failed — " + $key + ": " + $summary + "\nRun: " + $run_url + "\nSource PR: " + $pr_url)}')
+            '{text: ("[Automation Script Generation] :x: Failed — " + $key + ": " + $summary + "\nRun: " + $run_url + "\nSource PR: " + $pr_url)}')
           curl -sf -X POST -H 'Content-type: application/json' --data "$payload" \
             "${{ secrets.SLACK_JW_PLAYER_CI_WEBHOOK_URL }}"

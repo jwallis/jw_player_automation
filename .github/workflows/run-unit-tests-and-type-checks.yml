@@ -30,3 +30,24 @@ jobs:
           python-version: "3.11"
       - run: pip install -r requirements.txt
       - run: mypy .
+
+  notify:
+    needs: [test, typecheck]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Notify Slack (success)
+        if: needs.test.result == 'success' && needs.typecheck.result == 'success'
+        run: |
+          curl -sf -X POST -H 'Content-type: application/json' \
+            --data "{\"text\": \"[Automation Unit Tests and Type Checking] :white_check_mark: passed\"}" \
+            "${{ secrets.SLACK_JW_PLAYER_CI_WEBHOOK_URL }}"
+
+      - name: Notify Slack (failure)
+        if: needs.test.result != 'success' || needs.typecheck.result != 'success'
+        run: |
+          run_url="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          curl -sf -X POST -H 'Content-type: application/json' \
+            --data "{\"text\": \"[Automation Unit Tests and Type Checking] :x: Failed — Run: ${run_url}\"}" \
+            "${{ secrets.SLACK_JW_PLAYER_CI_WEBHOOK_URL }}"

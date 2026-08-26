@@ -66,6 +66,7 @@ jobs:
           AWS_DEFAULT_REGION: ${{ secrets.AWS_REGION }}
           APK_PATH: ./apk/app-debug.apk
           TEST_PACKAGE_PATH: ./test_package.zip
+          PYTHONPATH: ${{ github.workspace }}
         run: python scripts/run_device_farm.py
 
       - name: Notify Slack (result)

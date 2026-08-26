@@ -1,7 +1,7 @@
 """Real Appium test scenarios for the "Library Browsing & Navigation" epic
 - see docs/qa/test_cases.md. One function per test case, built on the
 service layer only (never raw driver/page calls) - see
-test_framework_wiring.py's own docstring for why these live apart from
+unittests/test_unit_tests.py's own docstring for why these live apart from
 framework plumbing checks.
 """
 

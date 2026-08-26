@@ -13,7 +13,7 @@ from pages.library_page import LibraryPage
 from services.library_service import LibraryService
 
 
-def test_PLAYER_TC_044_empty_library_placeholder_promises_to_show_songs():
+def test_PLAYER_TC_044_empty_library_placeholder_invites_listening_to_music():
     config = load_config()
     driver_wrapper = DriverFactory.create(config)
     try:

@@ -57,3 +57,18 @@ class PlaybackService:
         now_playing = self.library_page.get_now_playing_text()
         if song_name not in now_playing:
             raise ValidationError(f"Expected {song_name!r} to be playing, but got {now_playing!r}")
+
+    def get_elapsed_seconds(self) -> int:
+        """Parses the "MM:SS" elapsed_time_text into total seconds."""
+        minutes, seconds = self.library_page.get_elapsed_time_text().split(":")
+        return int(minutes) * 60 + int(seconds)
+
+    def validate_elapsed_time_is_zero(self) -> None:
+        elapsed = self.get_elapsed_seconds()
+        if elapsed != 0:
+            raise ValidationError(f"Expected elapsed time to be 0s, but got {elapsed}s")
+
+    def validate_elapsed_time_has_advanced(self) -> None:
+        elapsed = self.get_elapsed_seconds()
+        if elapsed <= 0:
+            raise ValidationError(f"Expected elapsed time to have advanced past 0s, but got {elapsed}s")

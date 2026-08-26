@@ -48,3 +48,6 @@ class LibraryPage(BasePage):
 
     def get_empty_library_message(self) -> str:
         return self.driver_wrapper.find_by(self.EMPTY_LIBRARY_MESSAGE).text
+
+    def get_elapsed_time_text(self) -> str:
+        return self.driver_wrapper.find_by(self.ELAPSED_TIME_TEXT).text

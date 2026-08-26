@@ -14,6 +14,8 @@ running without a fresh launch.
 
 from __future__ import annotations
 
+import time
+
 from config.config import load_config
 from driver.driver_factory import DriverFactory
 from pages.library_page import LibraryPage
@@ -40,7 +42,10 @@ def test_critical_path_play_song_and_verify_playing():
         library_page = LibraryPage(driver_wrapper)
         service = PlaybackService(library_page)
 
+        service.validate_elapsed_time_is_zero()
         service.play_song(SONG_PATH)
+        time.sleep(3)
+        service.validate_elapsed_time_has_advanced()
         service.validate_song_is_playing("song_a")
     finally:
         DriverFactory.quit(driver_wrapper)

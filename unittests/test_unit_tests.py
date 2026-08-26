@@ -72,6 +72,59 @@ def test_playback_service_validates_song_playing():
     service.validate_song_is_playing("seek_test")  # should not raise
 
 
+def test_playback_service_get_elapsed_seconds_parses_mm_ss():
+    driver_wrapper = MagicMock()
+    driver_wrapper.find_by.return_value.text = "02:15"
+    library_page = LibraryPage(driver_wrapper)
+    service = PlaybackService(library_page)
+
+    assert service.get_elapsed_seconds() == 135
+
+
+def test_playback_service_validates_elapsed_time_is_zero():
+    driver_wrapper = MagicMock()
+    driver_wrapper.find_by.return_value.text = "00:00"
+    library_page = LibraryPage(driver_wrapper)
+    service = PlaybackService(library_page)
+
+    service.validate_elapsed_time_is_zero()  # should not raise
+
+
+def test_playback_service_validation_fails_when_elapsed_time_not_zero():
+    driver_wrapper = MagicMock()
+    driver_wrapper.find_by.return_value.text = "00:03"
+    library_page = LibraryPage(driver_wrapper)
+    service = PlaybackService(library_page)
+
+    try:
+        service.validate_elapsed_time_is_zero()
+        assert False, "expected ValidationError"
+    except ValidationError:
+        pass
+
+
+def test_playback_service_validates_elapsed_time_has_advanced():
+    driver_wrapper = MagicMock()
+    driver_wrapper.find_by.return_value.text = "00:03"
+    library_page = LibraryPage(driver_wrapper)
+    service = PlaybackService(library_page)
+
+    service.validate_elapsed_time_has_advanced()  # should not raise
+
+
+def test_playback_service_validation_fails_when_elapsed_time_has_not_advanced():
+    driver_wrapper = MagicMock()
+    driver_wrapper.find_by.return_value.text = "00:00"
+    library_page = LibraryPage(driver_wrapper)
+    service = PlaybackService(library_page)
+
+    try:
+        service.validate_elapsed_time_has_advanced()
+        assert False, "expected ValidationError"
+    except ValidationError:
+        pass
+
+
 def test_playback_service_validation_fails_when_not_playing():
     driver_wrapper = MagicMock()
     driver_wrapper.is_present.return_value = False

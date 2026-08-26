@@ -142,6 +142,19 @@ jobs:
               and don't go back and fix old entries — out of scope for this
               task).
 
+            If this story's change supersedes what an existing test script
+            or shared constant already asserts (e.g. a literal string that
+            changed, matching the pattern already in test_cases.md where a
+            newer case supersedes an older one's exact wording), update that
+            existing test/constant in the same commit - rename/edit the
+            existing test function in place rather than leaving it alongside
+            a new one. Never leave a stale assertion that will fail the
+            moment this runs against the real app. This works fine with how
+            test selection works: it's driven by the function name in
+            last_generated_tests.txt, not by whether the file is new, so an
+            updated existing file is picked up exactly the same as a new one
+            would be.
+
             For each new case marked Automatable: Yes, write one test
             function in tests/ (a new file if none fits - see
             unittests/test_unit_tests.py's own docstring for why framework-

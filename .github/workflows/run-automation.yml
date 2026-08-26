@@ -18,6 +18,13 @@ jobs:
         uses: actions/checkout@v7
         with:
           ref: ${{ github.event.workflow_run.head_sha }}
+          fetch-depth: 2
+
+      - name: Extract Jira issue key from commit
+        id: jira-key
+        run: |
+          issue_key=$(git log -1 --format=%B | sed -n 's/^Jira-Issue: *//p' | head -n1)
+          echo "issue_key=$issue_key" >> "$GITHUB_OUTPUT"
 
       - uses: actions/setup-python@v7
         with:
@@ -74,3 +81,15 @@ jobs:
         env:
           SLACK_JW_PLAYER_CI_WEBHOOK_URL: ${{ secrets.SLACK_JW_PLAYER_CI_WEBHOOK_URL }}
         run: python scripts/notify_slack_device_farm_result.py
+
+      - name: Transition Jira issue (result)
+        if: always() && steps.jira-key.outputs.issue_key != ''
+        env:
+          JIRA_EMAIL: ${{ secrets.JIRA_EMAIL }}
+          JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
+        run: |
+          status="AI Testing Failed"
+          if [ -f device_farm_result.json ] && [ "$(jq -r '.run_result // empty' device_farm_result.json)" = "PASSED" ]; then
+            status="Done"
+          fi
+          bash .github/scripts/transition_jira_issue.sh "${{ steps.jira-key.outputs.issue_key }}" "$status"

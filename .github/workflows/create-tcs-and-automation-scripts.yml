@@ -259,8 +259,13 @@ jobs:
               Then commit everything locally (last_generated_tests.txt, the
               fixed file(s) - NOT test_cases.md, nothing there changed) in
               one commit referencing
-              ${{ github.event.client_payload.issue_key }}. Do NOT push - a
-              later workflow step does that.
+              ${{ github.event.client_payload.issue_key }}, whose message's
+              final line must be exactly
+              `Jira-Issue: ${{ github.event.client_payload.issue_key }}`
+              (a later workflow step, run-automation.yml, greps this exact
+              trailer to know which Jira issue to update with the real
+              device run's result - it has no other way to find the key).
+              Do NOT push - a later workflow step does that.
             - CASE_ADDED: one line per new test case you added, each in the
               exact format (pipe-delimited, no extra spaces around the
               pipes):
@@ -291,7 +296,12 @@ jobs:
               Then commit everything locally (test_cases.md,
               last_generated_tests.txt, any new/changed framework files, any
               new test file, any fixed existing file) in one commit
-              referencing ${{ github.event.client_payload.issue_key }}. Do
+              referencing ${{ github.event.client_payload.issue_key }}, whose
+              message's final line must be exactly
+              `Jira-Issue: ${{ github.event.client_payload.issue_key }}`
+              (a later workflow step, run-automation.yml, greps this exact
+              trailer to know which Jira issue to update with the real
+              device run's result - it has no other way to find the key). Do
               NOT push — a later workflow step does that.
 
             Do not touch .github/workflows/, secrets, CLAUDE.md, or
@@ -417,6 +427,13 @@ jobs:
           curl -sf -X POST -H 'Content-type: application/json' --data "$payload" \
             "${{ secrets.SLACK_JW_PLAYER_CI_WEBHOOK_URL }}"
 
+      - name: Transition Jira issue (Done - no case needed)
+        if: steps.verdict.outputs.verdict == 'NO_CASE_NEEDED'
+        env:
+          JIRA_EMAIL: ${{ secrets.JIRA_EMAIL }}
+          JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
+        run: bash .github/scripts/transition_jira_issue.sh "${{ github.event.client_payload.issue_key }}" "Done"
+
       - name: Notify Slack (no case needed)
         if: steps.verdict.outputs.verdict == 'NO_CASE_NEEDED'
         env:
@@ -427,6 +444,13 @@ jobs:
             '{text: ("[Test Case Generation] No test case needed for " + $key + ": " + $summary)}')
           curl -sf -X POST -H 'Content-type: application/json' --data "$payload" \
             "${{ secrets.SLACK_JW_PLAYER_CI_WEBHOOK_URL }}"
+
+      - name: Transition Jira issue (AI Testing Failed - blocked)
+        if: steps.verdict.outputs.verdict == 'BLOCKED'
+        env:
+          JIRA_EMAIL: ${{ secrets.JIRA_EMAIL }}
+          JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
+        run: bash .github/scripts/transition_jira_issue.sh "${{ github.event.client_payload.issue_key }}" "AI Testing Failed"
 
       - name: Notify Slack (blocked)
         if: steps.verdict.outputs.verdict == 'BLOCKED'
@@ -453,3 +477,13 @@ jobs:
             '{text: ("[Automation Script Generation] :x: Failed — " + $key + ": " + $summary + "\nRun: " + $run_url + "\nSource PR: " + $pr_url)}')
           curl -sf -X POST -H 'Content-type: application/json' --data "$payload" \
             "${{ secrets.SLACK_JW_PLAYER_CI_WEBHOOK_URL }}"
+
+      - name: Transition Jira issue (AI Testing Failed)
+        if: failure()
+        env:
+          JIRA_EMAIL: ${{ secrets.JIRA_EMAIL }}
+          JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
+        run: |
+          if [ -f .github/scripts/transition_jira_issue.sh ]; then
+            bash .github/scripts/transition_jira_issue.sh "${{ github.event.client_payload.issue_key }}" "AI Testing Failed"
+          fi

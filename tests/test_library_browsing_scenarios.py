@@ -13,7 +13,7 @@ from pages.library_page import LibraryPage
 from services.library_service import LibraryService
 
 
-def test_PLAYER_TC_044_empty_library_placeholder_says_please():
+def test_PLAYER_TC_044_empty_library_placeholder_mentions_root_folder():
     config = load_config()
     driver_wrapper = DriverFactory.create(config)
     try:

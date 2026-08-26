@@ -29,9 +29,16 @@ def test_critical_path_play_song_and_verify_playing():
     config = load_config()
     driver_wrapper = DriverFactory.create(config)
     try:
-        DriverUtil(driver_wrapper).set_root_folder_via_backdoor(ROOT_FOLDER_PATH)
-
         app_util = AppUtil(driver_wrapper, config)
+        # The very first cold launch's initial Compose render is unreliable on
+        # real hardware (seen in Device Farm's own session video: the app
+        # appears but its content doesn't render until the second launch) -
+        # cycle through one throwaway launch before relying on anything shown
+        # on screen.
+        app_util.quit_app()
+        app_util.launch_app()
+
+        DriverUtil(driver_wrapper).set_root_folder_via_backdoor(ROOT_FOLDER_PATH)
         app_util.quit_app()
         app_util.launch_app()
 

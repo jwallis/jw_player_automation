@@ -11,12 +11,20 @@ from config.config import load_config
 from driver.driver_factory import DriverFactory
 from pages.library_page import LibraryPage
 from services.library_service import LibraryService
+from utils.app_util import AppUtil
 
 
 def test_PLAYER_TC_044_empty_library_placeholder_invites_listening_to_music():
     config = load_config()
     driver_wrapper = DriverFactory.create(config)
     try:
+        # See test_critical_path.py: the very first cold launch's initial
+        # render is unreliable on real hardware, so cycle through one
+        # throwaway launch before relying on anything shown on screen.
+        app_util = AppUtil(driver_wrapper, config)
+        app_util.quit_app()
+        app_util.launch_app()
+
         library_page = LibraryPage(driver_wrapper)
         service = LibraryService(library_page)
 

@@ -43,8 +43,13 @@ phases:
   test:
     commands:
       - cd $DEVICEFARM_TEST_PACKAGE_PATH
-      - echo "=== /sdcard recursive listing (where did Extra Data land?) ==="
+      - echo "=== Extra Data search: checking every plausible extraction location ==="
       - adb shell find /sdcard -maxdepth 6 2>&1 || true
+      - adb shell find /storage -maxdepth 6 2>&1 || true
+      - adb shell find /mnt -maxdepth 6 2>&1 || true
+      - adb shell find /data/local/tmp -maxdepth 6 2>&1 || true
+      - echo "$DEVICEFARM_TEST_PACKAGE_PATH contents:"
+      - find "$DEVICEFARM_TEST_PACKAGE_PATH" -maxdepth 3 2>&1 || true
       - python3 -m pytest -v -k "$PYTEST_TEST_FILTER"
 
 artifacts:

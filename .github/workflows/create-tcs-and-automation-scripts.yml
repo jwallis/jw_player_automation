@@ -259,13 +259,8 @@ jobs:
               Then commit everything locally (last_generated_tests.txt, the
               fixed file(s) - NOT test_cases.md, nothing there changed) in
               one commit referencing
-              ${{ github.event.client_payload.issue_key }}, whose message's
-              final line must be exactly
-              `Jira-Issue: ${{ github.event.client_payload.issue_key }}`
-              (a later workflow step, run-automation.yml, greps this exact
-              trailer to know which Jira issue to update with the real
-              device run's result - it has no other way to find the key).
-              Do NOT push - a later workflow step does that.
+              ${{ github.event.client_payload.issue_key }}. Do NOT push - a
+              later workflow step does that.
             - CASE_ADDED: one line per new test case you added, each in the
               exact format (pipe-delimited, no extra spaces around the
               pipes):
@@ -296,12 +291,7 @@ jobs:
               Then commit everything locally (test_cases.md,
               last_generated_tests.txt, any new/changed framework files, any
               new test file, any fixed existing file) in one commit
-              referencing ${{ github.event.client_payload.issue_key }}, whose
-              message's final line must be exactly
-              `Jira-Issue: ${{ github.event.client_payload.issue_key }}`
-              (a later workflow step, run-automation.yml, greps this exact
-              trailer to know which Jira issue to update with the real
-              device run's result - it has no other way to find the key). Do
+              referencing ${{ github.event.client_payload.issue_key }}. Do
               NOT push — a later workflow step does that.
 
             Do not touch .github/workflows/, secrets, CLAUDE.md, or
@@ -338,6 +328,13 @@ jobs:
             } >> "$GITHUB_OUTPUT"
           fi
           rm -f .automation_verdict
+
+      - name: Append Jira issue trailer to commit
+        if: steps.verdict.outputs.verdict == 'CASE_ADDED' || steps.verdict.outputs.verdict == 'EXISTING_TEST_FIXED'
+        run: |
+          git commit --amend -m "$(git log -1 --format=%B)
+
+          Jira-Issue: ${{ github.event.client_payload.issue_key }}"
 
       - name: Independently verify tests and types
         if: steps.verdict.outputs.verdict == 'CASE_ADDED' || steps.verdict.outputs.verdict == 'EXISTING_TEST_FIXED'

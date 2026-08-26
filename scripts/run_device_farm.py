@@ -118,9 +118,15 @@ def main() -> int:
     apk_path = _require_env("APK_PATH")
     test_package_path = _require_env("TEST_PACKAGE_PATH")
     extra_data_candidate = config.device_farm_extra_data_path
-    extra_data_path = (
-        extra_data_candidate if extra_data_candidate and os.path.isfile(extra_data_candidate) else None
+    extra_data_resolved = (
+        (Path(__file__).resolve().parent.parent / extra_data_candidate) if extra_data_candidate else None
     )
+    print(
+        f"Extra Data fixture: candidate={extra_data_candidate!r} "
+        f"resolved={extra_data_resolved} exists={extra_data_resolved.is_file() if extra_data_resolved else False} "
+        f"cwd={os.getcwd()}"
+    )
+    extra_data_path = str(extra_data_resolved) if extra_data_resolved and extra_data_resolved.is_file() else None
 
     client = boto3.client("devicefarm")
 

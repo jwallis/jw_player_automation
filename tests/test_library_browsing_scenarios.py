@@ -7,16 +7,19 @@ framework plumbing checks.
 
 from __future__ import annotations
 
-from unittest.mock import MagicMock
-
+from config.config import load_config
+from driver.driver_factory import DriverFactory
 from pages.library_page import LibraryPage
 from services.library_service import LibraryService
 
 
 def test_PLAYER_TC_044_empty_library_placeholder_says_please():
-    driver_wrapper = MagicMock()
-    driver_wrapper.find_by.return_value.text = "No music yet. Please choose a folder to get started!"
-    library_page = LibraryPage(driver_wrapper)
-    service = LibraryService(library_page)
+    config = load_config()
+    driver_wrapper = DriverFactory.create(config)
+    try:
+        library_page = LibraryPage(driver_wrapper)
+        service = LibraryService(library_page)
 
-    service.validate_empty_library_message_shown()  # should not raise
+        service.validate_empty_library_message_shown()
+    finally:
+        DriverFactory.quit(driver_wrapper)

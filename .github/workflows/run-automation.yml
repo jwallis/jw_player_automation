@@ -1,0 +1,79 @@
+name: Run Automation
+
+on:
+  workflow_run:
+    workflows: ["Run Unit Tests And Type Checks"]
+    types: [completed]
+
+permissions:
+  contents: read
+
+jobs:
+  run-device-farm:
+    if: github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout at the tested commit
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Generate developer-bot token
+        id: app-token
+        uses: actions/create-github-app-token@v3
+        with:
+          client-id: ${{ secrets.DEVELOPER_BOT_CLIENT_ID }}
+          private-key: ${{ secrets.DEVELOPER_BOT_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+          repositories: jw_player
+
+      - name: Find latest jw_player APK artifact run
+        id: find-run
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: |
+          run_id=$(gh run list --repo "${{ github.repository_owner }}/jw_player" --workflow "AI Code Review" --status success --limit 1 --json databaseId -q '.[0].databaseId')
+          if [ -z "$run_id" ]; then
+            echo "::error::No successful AI Code Review run found in jw_player to pull an APK artifact from"
+            exit 1
+          fi
+          echo "run_id=$run_id" >> "$GITHUB_OUTPUT"
+
+      - name: Download latest jw_player APK
+        uses: actions/download-artifact@v4
+        with:
+          name: app-debug
+          path: ./apk
+          repository: ${{ github.repository_owner }}/jw_player
+          run-id: ${{ steps.find-run.outputs.run_id }}
+          github-token: ${{ steps.app-token.outputs.token }}
+
+      - name: Build scenario test package (critical path + what's new only)
+        run: python scripts/build_test_package.py
+
+      - name: Run Device Farm
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: ${{ secrets.AWS_REGION }}
+          DEVICE_FARM_PROJECT_ARN: ${{ secrets.DEVICE_FARM_PROJECT_ARN }}
+          DEVICE_FARM_POOL_ARN: ${{ secrets.DEVICE_FARM_POOL_ARN }}
+          DEVICE_FARM_TEST_SPEC_ARN: ${{ secrets.DEVICE_FARM_TEST_SPEC_ARN }}
+          APK_PATH: ./apk/app-debug.apk
+          TEST_PACKAGE_PATH: ./test_package.zip
+          EXTRA_DATA_PATH: fixtures/device_farm_extra_data.zip
+        run: python scripts/run_device_farm.py
+
+      - name: Notify Slack (result)
+        if: always()
+        env:
+          SLACK_JW_PLAYER_CI_WEBHOOK_URL: ${{ secrets.SLACK_JW_PLAYER_CI_WEBHOOK_URL }}
+        run: python scripts/notify_slack_device_farm_result.py

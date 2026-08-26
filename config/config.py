@@ -31,6 +31,10 @@ class AutomationConfig:
     app_activity: str
     implicit_wait_seconds: int
     splash_screen_wait_seconds: int
+    device_farm_project_arn: str
+    device_farm_pool_arn: str
+    device_farm_test_spec_arn: str
+    device_farm_extra_data_path: str
 
     @property
     def capabilities(self) -> dict:

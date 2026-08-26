@@ -64,12 +64,8 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_DEFAULT_REGION: ${{ secrets.AWS_REGION }}
-          DEVICE_FARM_PROJECT_ARN: ${{ secrets.DEVICE_FARM_PROJECT_ARN }}
-          DEVICE_FARM_POOL_ARN: ${{ secrets.DEVICE_FARM_POOL_ARN }}
-          DEVICE_FARM_TEST_SPEC_ARN: ${{ secrets.DEVICE_FARM_TEST_SPEC_ARN }}
           APK_PATH: ./apk/app-debug.apk
           TEST_PACKAGE_PATH: ./test_package.zip
-          EXTRA_DATA_PATH: fixtures/device_farm_extra_data.zip
         run: python scripts/run_device_farm.py
 
       - name: Notify Slack (result)

@@ -4,10 +4,13 @@ completion, and writes a structured result to `device_farm_result.json` for
 the workflow's Slack step to read. Exits non-zero if the run's overall
 result isn't PASSED, so the calling workflow step fails accordingly.
 
-Configuration comes entirely from environment variables (set by
-run-automation.yml from GitHub secrets/repo variables), not hardcoded here:
-DEVICE_FARM_PROJECT_ARN, DEVICE_FARM_POOL_ARN, DEVICE_FARM_TEST_SPEC_ARN,
-APK_PATH, TEST_PACKAGE_PATH, EXTRA_DATA_PATH (optional).
+The Device Farm project/pool/test-spec ARNs and the Extra Data fixture path
+come from `config/environments/default.yaml` and `config/config.yaml` via
+`load_config()` - they're identifiers/paths, not secrets, set once during
+the AWS setup session. APK_PATH and TEST_PACKAGE_PATH are environment
+variables instead: they're computed fresh each run by earlier workflow
+steps (the artifact download location, the packaging script's own output
+file), not something set ahead of time.
 """
 
 from __future__ import annotations
@@ -21,6 +24,8 @@ from typing import Any
 
 import boto3
 import requests
+
+from config.config import load_config
 
 UPLOAD_POLL_SECONDS = 5
 RUN_POLL_SECONDS = 15
@@ -76,13 +81,23 @@ def _console_url(run_arn: str) -> str:
 
 
 def main() -> int:
-    project_arn = _require_env("DEVICE_FARM_PROJECT_ARN")
-    pool_arn = _require_env("DEVICE_FARM_POOL_ARN")
-    test_spec_arn = _require_env("DEVICE_FARM_TEST_SPEC_ARN")
+    config = load_config()
+    project_arn = config.device_farm_project_arn
+    pool_arn = config.device_farm_pool_arn
+    test_spec_arn = config.device_farm_test_spec_arn
+    if not (project_arn and pool_arn and test_spec_arn):
+        raise SystemExit(
+            "device_farm_project_arn/pool_arn/test_spec_arn aren't set in "
+            "config/environments/default.yaml yet - fill these in during the "
+            "AWS setup session before this can run."
+        )
+
     apk_path = _require_env("APK_PATH")
     test_package_path = _require_env("TEST_PACKAGE_PATH")
-    extra_data_env = os.environ.get("EXTRA_DATA_PATH")
-    extra_data_path = extra_data_env if extra_data_env and os.path.isfile(extra_data_env) else None
+    extra_data_candidate = config.device_farm_extra_data_path
+    extra_data_path = (
+        extra_data_candidate if extra_data_candidate and os.path.isfile(extra_data_candidate) else None
+    )
 
     client = boto3.client("devicefarm")
 

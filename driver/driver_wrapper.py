@@ -35,7 +35,11 @@ class DriverWrapper:
                 EC.presence_of_element_located((AppiumBy.ID, test_tag))
             )
         except Exception as e:
-            raise ElementNotFoundError(test_tag) from e
+            try:
+                page_source = self.driver.page_source
+            except Exception:
+                page_source = None
+            raise ElementNotFoundError(test_tag, page_source) from e
 
     def is_present(self, test_tag: str) -> bool:
         try:

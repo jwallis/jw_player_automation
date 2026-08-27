@@ -5,7 +5,7 @@ from __future__ import annotations
 from pages.library_page import LibraryPage
 from exceptions.automation_errors import ValidationError
 
-EMPTY_LIBRARY_MESSAGE = "Choose a root folder to get started, then we can listen to some music!"
+EMPTY_LIBRARY_MESSAGE = "Please choose a root folder to get started."
 
 
 class LibraryService:

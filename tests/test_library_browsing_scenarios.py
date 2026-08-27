@@ -12,7 +12,7 @@ from pages.library_page import LibraryPage
 from services.library_service import LibraryService
 
 
-def test_PLAYER_TC_044_empty_library_placeholder_invites_listening_to_music(driver_wrapper: DriverWrapper):
+def test_PLAYER_TC_044_empty_library_placeholder_asks_to_choose_root_folder(driver_wrapper: DriverWrapper):
     library_page = LibraryPage(driver_wrapper)
     service = LibraryService(library_page)
 

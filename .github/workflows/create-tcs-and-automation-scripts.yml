@@ -33,6 +33,15 @@ jobs:
           echo "Summary: ${{ github.event.client_payload.summary }}"
           echo "Source PR: ${{ github.event.client_payload.source_repo }}#${{ github.event.client_payload.pr_number }}"
 
+      - name: Determine work item type
+        id: type-check
+        run: |
+          if [ "${{ github.event.client_payload.issue_type }}" = "Technical Task" ]; then
+            echo "is_tech_task=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "is_tech_task=false" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Generate developer-bot token
         id: app-token
         uses: actions/create-github-app-token@v3
@@ -58,6 +67,7 @@ jobs:
           git config core.pager cat
 
       - name: Fetch story diff from jw_player
+        if: steps.type-check.outputs.is_tech_task != 'true'
         env:
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
           SOURCE_REPO: ${{ github.event.client_payload.source_repo }}
@@ -72,6 +82,7 @@ jobs:
         run: pip install -r requirements.txt
 
       - name: Run Claude Code to generate test case and automation
+        if: steps.type-check.outputs.is_tech_task != 'true'
         id: claude
         uses: anthropics/claude-code-action@v1.0.201
         with:
@@ -301,6 +312,7 @@ jobs:
             --allowedTools "Read,Edit,Write,Bash(git add:*),Bash(git commit:*),Bash(git status:*),Bash(git diff:*),Bash(git log:*),Bash(pytest:*),Bash(mypy:*),Bash(find:*),Bash(grep:*)"
 
       - name: Read verdict
+        if: steps.type-check.outputs.is_tech_task != 'true'
         id: verdict
         run: |
           if [ ! -f .automation_verdict ]; then
@@ -336,6 +348,13 @@ jobs:
 
           Jira-Issue: ${{ github.event.client_payload.issue_key }}"
 
+      - name: Make empty commit for technical task
+        if: steps.type-check.outputs.is_tech_task == 'true'
+        run: |
+          git commit --allow-empty -m "No new test cases for tech task ${{ github.event.client_payload.issue_key }}
+
+          Jira-Issue: ${{ github.event.client_payload.issue_key }}"
+
       - name: Independently verify tests and types
         if: steps.verdict.outputs.verdict == 'CASE_ADDED' || steps.verdict.outputs.verdict == 'EXISTING_TEST_FIXED'
         run: |
@@ -344,7 +363,7 @@ jobs:
           mypy .
 
       - name: Push
-        if: steps.verdict.outputs.verdict == 'CASE_ADDED' || steps.verdict.outputs.verdict == 'EXISTING_TEST_FIXED'
+        if: steps.verdict.outputs.verdict == 'CASE_ADDED' || steps.verdict.outputs.verdict == 'EXISTING_TEST_FIXED' || steps.type-check.outputs.is_tech_task == 'true'
         run: git push origin main
 
       - name: Build Slack case summary
@@ -421,6 +440,17 @@ jobs:
         run: |
           payload=$(jq -n --arg key "$ISSUE_KEY" --arg lines "$FIXED_LINES" \
             '{text: ("[Automation Script Generation] :wrench: Existing test(s) fixed for " + $key + $lines)}')
+          curl -sf -X POST -H 'Content-type: application/json' --data "$payload" \
+            "${{ secrets.SLACK_JW_PLAYER_CI_WEBHOOK_URL }}"
+
+      - name: Notify Slack (technical task, running existing automation)
+        if: steps.type-check.outputs.is_tech_task == 'true' && success()
+        env:
+          ISSUE_KEY: ${{ github.event.client_payload.issue_key }}
+          SUMMARY: ${{ github.event.client_payload.summary }}
+        run: |
+          payload=$(jq -n --arg key "$ISSUE_KEY" --arg summary "$SUMMARY" \
+            '{text: ("[Test Case Generation] Technical task " + $key + ": " + $summary + " — no new test cases needed, running existing automation to validate.")}')
           curl -sf -X POST -H 'Content-type: application/json' --data "$payload" \
             "${{ secrets.SLACK_JW_PLAYER_CI_WEBHOOK_URL }}"
 

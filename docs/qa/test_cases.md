@@ -443,6 +443,31 @@ TC IDs below reference files from this tree by name.
  2. Let track_a2.mp3 play to completion without interacting with controls.
     Expected: Playback stops after track_a2.mp3 ends; it does NOT wrap
     back around to play track_a1.mp3 automatically.
+---
+### PLAYER_TC-045: System media notification shows the current track's title and artist
+**Story:** JWP-39
+**Jira Issue ID:** JWP-39
+**Priority:** Medium
+**Automatable (Appium):** No (system notification panel is external Android
+                       System UI, not the app's own Compose tree - its
+                       layout/resource-ids are OEM- and version-dependent
+                       and flaky/opaque to automate in practice, same
+                       reasoning as the system file picker dialogs above)
+**Test Data:** "Long Track With A Really Long Title And Artist Name.mp3"
+           (has an ID3 artist tag); Root/FolderA/ (track_a1.mp3, track_a2.mp3)
+**Steps:**
+ 1. Play "Long Track With A Really Long Title And Artist Name.mp3", then
+    pull down the system notification shade.
+    Expected: The media playback notification shows the track's actual
+    title and artist, not blank.
+ 2. Tap "next" (or skip via a connected Bluetooth headset's controls) to
+    move to another track, then pull down the notification shade again.
+    Expected: The notification updates to show the new track's title and
+    artist.
+ 3. With a paired Bluetooth headset or car head unit that has a display
+    connected, repeat step 1.
+    Expected: The paired device's display shows the same title/artist as
+    the system notification.
 
 ## Epic: White Noise
 

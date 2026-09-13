@@ -468,6 +468,90 @@ TC IDs below reference files from this tree by name.
     connected, repeat step 1.
     Expected: The paired device's display shows the same title/artist as
     the system notification.
+---
+### PLAYER_TC-046: App requests the notification permission once, only after playback starts, on Android 13+
+**Story:** JWP-40
+**Jira Issue ID:** JWP-40
+**Priority:** Medium
+**Automatable (Appium):** No (requires driving/observing the OS's own
+                       permission-prompt dialog, and the behavior is
+                       conditional on API level, same reasoning as the
+                       system folder/file picker dialogs above)
+**Test Data:** Fresh app install / cleared app data, notification permission
+           not yet determined, device running Android 13 (API 33) or higher;
+           Root/seek_test.mp3
+**Steps:**
+ 1. Launch the app fresh and reach the main screen without starting playback.
+    Expected: No notification-permission dialog appears.
+ 2. Tap seek_test.mp3 to begin playback for the first time.
+    Expected: The system POST_NOTIFICATIONS permission dialog appears.
+ 3. Respond to the dialog (either Allow or Deny), then pause and resume
+    playback.
+    Expected: The dialog does not appear a second time.
+---
+### PLAYER_TC-047: Denying the notification permission leaves playback controls working, with no notification and no crash
+**Story:** JWP-40
+**Jira Issue ID:** JWP-40
+**Priority:** Medium
+**Automatable (Appium):** No (requires driving the OS's own permission
+                       dialog to Deny, same reasoning as PLAYER_TC-046)
+**Test Data:** Fresh app install / cleared app data, device running Android 13
+           (API 33) or higher; Root/seek_test.mp3
+**Steps:**
+ 1. On first playback start, deny the POST_NOTIFICATIONS permission when
+    prompted.
+    Expected: App does not crash; playback continues normally.
+ 2. Use play/pause, seek, and next/previous (or a connected Bluetooth
+    headset's controls).
+    Expected: All controls keep working exactly as they would with the
+    permission granted.
+ 3. Pull down the system notification shade.
+    Expected: No playback notification is present.
+---
+### PLAYER_TC-048: Granted playback notification reflects play/pause state, has working controls, and opens MainActivity when tapped
+**Story:** JWP-40
+**Jira Issue ID:** JWP-40
+**Priority:** Medium
+**Automatable (Appium):** No (system notification panel is external Android
+                       System UI, not the app's own Compose tree, same
+                       reasoning as PLAYER_TC-045)
+**Test Data:** Root/seek_test.mp3; Root/FolderA/ (track_a1.mp3, track_a2.mp3);
+           notification permission already granted
+**Steps:**
+ 1. Play seek_test.mp3, then pull down the system notification shade.
+    Expected: A media-style notification is visible with a "pause" icon
+    (matching the currently-playing state).
+ 2. Tap pause in the notification.
+    Expected: Icon switches to "play" in the notification, and the app's
+    own mini player shows paused too.
+ 3. Tap play, then tap next/previous in the notification.
+    Expected: Playback advances/returns to the corresponding track in
+    Root/FolderA/, matching the app's own mini player.
+ 4. Background the app, then tap the body of the notification (not one of
+    its controls).
+    Expected: MainActivity opens and comes to the foreground.
+---
+### PLAYER_TC-049: Notification disappears and the foreground service ends once nothing is playing
+**Story:** JWP-40
+**Jira Issue ID:** JWP-40
+**Priority:** Medium
+**Automatable (Appium):** No (system notification panel and foreground-
+                       service lifecycle are external to the app's own UI,
+                       same reasoning as PLAYER_TC-045)
+**Test Data:** Root/FolderA/ (track_a1.mp3, track_a2.mp3 - 2-file queue);
+           white_noise_sample.mp3; notification permission already granted
+**Steps:**
+ 1. Play track_a1.mp3, tap "next" to reach track_a2.mp3 (last in queue), and
+    let it play to completion without interacting with controls (per
+    PLAYER_TC-028), then pull down the notification shade.
+    Expected: The playback notification is gone.
+ 2. Start white noise, then tap the white-noise button again to stop it,
+    then pull down the notification shade.
+    Expected: The playback notification is gone here too.
+ 3. With nothing playing, background the app (home button), then check the
+    notification shade and the recent-apps/task list.
+    Expected: No lingering playback notification, and the app is not shown
+    as running a foreground service.
 
 ## Epic: White Noise
 

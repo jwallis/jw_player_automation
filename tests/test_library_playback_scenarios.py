@@ -15,9 +15,13 @@ from services.playback_service import PlaybackService
 from services.settings_service import SettingsService
 
 ROOT_FOLDER_PATH = "device_farm_extra_data"
-FIRST_SONG_PATH = "/FolderA/track_a1.mp3"
-SECOND_SONG_PATH = "/seek_test.mp3"
-SECOND_SONG_DURATION_SECONDS = 60
+# song_a is ~75s and song_b ~35s (testdata/device_farm_extra_data.zip), so a
+# seek computed from the first track's duration lands nowhere near the
+# second track's midpoint.
+FIRST_SONG_PATH = "/genre_c/artist_a/song_a.mp3"
+SECOND_SONG_NAME = "song_b.mp3"
+SECOND_SONG_MIDPOINT_SECONDS = 18
+MIDPOINT_TOLERANCE_SECONDS = 4
 
 
 def test_PLAYER_TC_050_seek_bar_uses_currently_playing_tracks_duration(driver_wrapper: DriverWrapper):
@@ -35,8 +39,8 @@ def test_PLAYER_TC_050_seek_bar_uses_currently_playing_tracks_duration(driver_wr
     service.play_song(FIRST_SONG_PATH)
     service.wait_for_elapsed_time_to_advance()
 
-    service.play_song(SECOND_SONG_PATH)
+    service.play_song(SECOND_SONG_NAME)
     service.wait_for_elapsed_time_to_advance()
 
     service.seek_to_fraction(0.5)
-    service.validate_elapsed_time_within(SECOND_SONG_DURATION_SECONDS // 2, tolerance_seconds=3)
+    service.validate_elapsed_time_within(SECOND_SONG_MIDPOINT_SECONDS, tolerance_seconds=MIDPOINT_TOLERANCE_SECONDS)

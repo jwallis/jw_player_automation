@@ -558,16 +558,17 @@ TC IDs below reference files from this tree by name.
 **Jira Issue ID:** JWP-41
 **Priority:** High
 **Automatable (Appium):** Yes
-**Test Data:** Root/FolderA/track_a1.mp3 (~10s); Root/seek_test.mp3 (60s
-           duration, no ID3 artist tag)
+**Test Data:** Root/genre_c/artist_a/song_a.mp3 (~75s); Root/genre_c/artist_a/song_b.mp3
+           (~35s)
 **Steps:**
- 1. Play track_a1.mp3 (the first track played this app session) and let it
+ 1. Play song_a.mp3 (the first track played this app session) and let it
     begin advancing.
- 2. Play seek_test.mp3 (a different track, with a different known duration).
+ 2. Play song_b.mp3 (a different track in the same folder, with a different
+    known duration).
  3. Tap the horizontal midpoint of the seek bar.
-    Expected: Elapsed time jumps to approximately "00:30" (50% of
-    seek_test.mp3's own 60s duration), not a position computed from
-    track_a1.mp3's ~10s duration.
+    Expected: Elapsed time jumps to approximately "00:18" (50% of
+    song_b.mp3's own ~35s duration), not a position computed from
+    song_a.mp3's ~75s duration.
 
 ## Epic: White Noise
 

@@ -12,6 +12,7 @@ from __future__ import annotations
 from unittest.mock import MagicMock, patch
 
 from config.config import load_config
+from driver.driver_wrapper import DriverWrapper
 from pages.library_page import LibraryPage
 from pages.notification_permission_dialog_page import NotificationPermissionDialogPage
 from pages.settings_page import SettingsPage
@@ -113,6 +114,50 @@ def test_playback_service_validates_elapsed_time_has_advanced():
     service = PlaybackService(library_page)
 
     service.validate_elapsed_time_has_advanced()  # should not raise
+
+
+def test_playback_service_validates_elapsed_time_within_tolerance():
+    driver_wrapper = MagicMock()
+    driver_wrapper.find_by.return_value.text = "00:31"
+    library_page = LibraryPage(driver_wrapper)
+    service = PlaybackService(library_page)
+
+    service.validate_elapsed_time_within(30, tolerance_seconds=3)  # should not raise
+
+
+def test_playback_service_validation_fails_when_elapsed_time_outside_tolerance():
+    driver_wrapper = MagicMock()
+    driver_wrapper.find_by.return_value.text = "00:10"
+    library_page = LibraryPage(driver_wrapper)
+    service = PlaybackService(library_page)
+
+    try:
+        service.validate_elapsed_time_within(30, tolerance_seconds=3)
+        assert False, "expected ValidationError"
+    except ValidationError:
+        pass
+
+
+def test_playback_service_seek_to_fraction_taps_seek_bar_at_fraction():
+    driver_wrapper = MagicMock()
+    library_page = LibraryPage(driver_wrapper)
+    service = PlaybackService(library_page)
+
+    service.seek_to_fraction(0.5)
+
+    driver_wrapper.tap_horizontal_fraction.assert_called_once_with(LibraryPage.SEEK_BAR, 0.5)
+
+
+def test_driver_wrapper_tap_horizontal_fraction_computes_midpoint_coordinates():
+    driver_wrapper = MagicMock()
+    driver_wrapper.find_by.return_value.location = {"x": 100, "y": 200}
+    driver_wrapper.find_by.return_value.size = {"width": 300, "height": 40}
+
+    DriverWrapper.tap_horizontal_fraction(driver_wrapper, "seek_bar", 0.5)
+
+    driver_wrapper.driver.execute_script.assert_called_once_with(
+        "mobile: clickGesture", {"x": 250, "y": 220}
+    )
 
 
 def test_playback_service_validation_fails_when_elapsed_time_has_not_advanced():

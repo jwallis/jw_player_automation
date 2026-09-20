@@ -61,6 +61,12 @@ class PlaybackService:
     def rewind(self, seconds: float) -> None:
         self.library_page.driver_wrapper.press_and_hold(LibraryPage.SEEK_BACKWARD_BUTTON, seconds)
 
+    def seek_to_fraction(self, fraction: float) -> None:
+        """Taps the seek bar at the given horizontal fraction of its width
+        (0.0 = start, 1.0 = end) - the same gesture a user makes to jump
+        playback to that position."""
+        self.library_page.tap_seek_bar_at_fraction(fraction)
+
     def validate_song_is_playing(self, song_name: str) -> None:
         if not self.library_page.is_playing():
             raise ValidationError(f"Expected {song_name!r} to be playing, but nothing is")
@@ -82,6 +88,13 @@ class PlaybackService:
         elapsed = self.get_elapsed_seconds()
         if elapsed <= 0:
             raise ValidationError(f"Expected elapsed time to have advanced past 0s, but got {elapsed}s")
+
+    def validate_elapsed_time_within(self, expected_seconds: int, tolerance_seconds: int = 3) -> None:
+        elapsed = self.get_elapsed_seconds()
+        if abs(elapsed - expected_seconds) > tolerance_seconds:
+            raise ValidationError(
+                f"Expected elapsed time within {tolerance_seconds}s of {expected_seconds}s, but got {elapsed}s"
+            )
 
     def wait_for_elapsed_time_to_advance(self, timeout_seconds: float = 10, poll_interval: float = 1) -> None:
         """Polls elapsed time until it advances past 0s, instead of a single

@@ -84,6 +84,18 @@ class DriverWrapper:
             {"elementId": element.id, "duration": int(hold_seconds * 1000)},
         )
 
+    def tap_horizontal_fraction(self, test_tag: str, fraction: float) -> None:
+        """Taps within test_tag's own bounds at the given horizontal fraction
+        of its width (0.0 = left edge, 1.0 = right edge), vertically centered
+        - for elements like the seek bar where the tap's position within the
+        element is itself the input, not just "the element" as a whole."""
+        element = self.find_by(test_tag)
+        location = element.location
+        size = element.size
+        x = location["x"] + int(size["width"] * fraction)
+        y = location["y"] + size["height"] // 2
+        self.driver.execute_script("mobile: clickGesture", {"x": x, "y": y})
+
     def shell(self, command: str, args: list[str] | None = None) -> str:
         result = self.driver.execute_script("mobile: shell", {"command": command, "args": args or []})
         return str(result)

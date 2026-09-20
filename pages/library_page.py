@@ -40,6 +40,9 @@ class LibraryPage(BasePage):
     def open_settings(self) -> None:
         self.driver_wrapper.tap(self.SETTINGS_ICON)
 
+    def tap_seek_bar_at_fraction(self, fraction: float) -> None:
+        self.driver_wrapper.tap_horizontal_fraction(self.SEEK_BAR, fraction)
+
     def is_playing(self) -> bool:
         return self.driver_wrapper.is_present(self.PAUSE_BUTTON)
 

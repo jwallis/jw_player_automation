@@ -552,6 +552,22 @@ TC IDs below reference files from this tree by name.
     notification shade and the recent-apps/task list.
     Expected: No lingering playback notification, and the app is not shown
     as running a foreground service.
+---
+### PLAYER_TC-050: Tapping the seek bar seeks using the currently playing track's own duration, not the first track played this session
+**Story:** JWP-41
+**Jira Issue ID:** JWP-41
+**Priority:** High
+**Automatable (Appium):** Yes
+**Test Data:** Root/FolderA/track_a1.mp3 (~10s); Root/seek_test.mp3 (60s
+           duration, no ID3 artist tag)
+**Steps:**
+ 1. Play track_a1.mp3 (the first track played this app session) and let it
+    begin advancing.
+ 2. Play seek_test.mp3 (a different track, with a different known duration).
+ 3. Tap the horizontal midpoint of the seek bar.
+    Expected: Elapsed time jumps to approximately "00:30" (50% of
+    seek_test.mp3's own 60s duration), not a position computed from
+    track_a1.mp3's ~10s duration.
 
 ## Epic: White Noise
 

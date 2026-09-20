@@ -3,6 +3,11 @@ device on every Device Farm invocation, alongside whatever's new that push -
 not gated on a specific PLAYER_TC entry, a fast general regression check
 that the core playback loop still works.
 
+The app requests notification permission once, the first time its main
+screen appears (before any other interaction) - dismissed first here via
+PermissionsService, or every following step stalls waiting behind that
+system dialog.
+
 Sets the root folder by driving the real Storage Access Framework picker
 (SettingsService.set_root_folder), not the debug-only backdoor - confirmed
 live that the backdoor's raw file:// URI can see folders but not files
@@ -15,7 +20,9 @@ from __future__ import annotations
 
 from driver.driver_wrapper import DriverWrapper
 from pages.library_page import LibraryPage
+from pages.notification_permission_dialog_page import NotificationPermissionDialogPage
 from pages.settings_page import SettingsPage
+from services.permissions_service import PermissionsService
 from services.playback_service import PlaybackService
 from services.settings_service import SettingsService
 
@@ -24,6 +31,9 @@ SONG_PATH = "/genre_c/artist_a/song_a.mp3"
 
 
 def test_critical_path_play_song_and_verify_playing(driver_wrapper: DriverWrapper):
+    permissions_page = NotificationPermissionDialogPage(driver_wrapper)
+    PermissionsService(permissions_page).allow_notifications()
+
     library_page = LibraryPage(driver_wrapper)
     library_page.open_settings()
 

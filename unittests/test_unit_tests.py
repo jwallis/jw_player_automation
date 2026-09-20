@@ -13,9 +13,11 @@ from unittest.mock import MagicMock, patch
 
 from config.config import load_config
 from pages.library_page import LibraryPage
+from pages.notification_permission_dialog_page import NotificationPermissionDialogPage
 from pages.settings_page import SettingsPage
 from pages.system_folder_picker_page import SystemFolderPickerPage
 from services.library_service import LibraryService
+from services.permissions_service import PermissionsService
 from services.playback_service import PlaybackService
 from services.settings_service import SettingsService
 from exceptions.automation_errors import ValidationError
@@ -252,3 +254,26 @@ def test_settings_service_set_root_folder_drives_the_full_picker_flow():
 
     driver_wrapper.tap.assert_called_once_with(SettingsPage.ROOT_FOLDER_BUTTON)
     assert driver_wrapper.tap_uiautomator.call_count == 4
+
+
+def test_notification_permission_dialog_page_taps_allow():
+    driver_wrapper = MagicMock()
+    dialog_page = NotificationPermissionDialogPage(driver_wrapper)
+
+    dialog_page.tap_allow()
+
+    driver_wrapper.tap_uiautomator.assert_called_once_with(
+        NotificationPermissionDialogPage.ALLOW_SELECTOR, locator="notification permission ALLOW button"
+    )
+
+
+def test_permissions_service_allow_notifications_taps_allow():
+    driver_wrapper = MagicMock()
+    dialog_page = NotificationPermissionDialogPage(driver_wrapper)
+    service = PermissionsService(dialog_page)
+
+    service.allow_notifications()
+
+    driver_wrapper.tap_uiautomator.assert_called_once_with(
+        NotificationPermissionDialogPage.ALLOW_SELECTOR, locator="notification permission ALLOW button"
+    )

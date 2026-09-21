@@ -243,6 +243,18 @@ TC IDs below reference files from this tree by name.
     Expected: Main screen shows the placeholder text "No music yet. Please
     choose a folder to get started!" (replacing the "No music yet — choose
     a folder to get started!" text from PLAYER_TC-043).
+---
+### PLAYER_TC-051: Empty-library placeholder text reads "Please choose a root folder"
+**Story:** JWP-42
+**Jira Issue ID:** JWP-42
+**Priority:** Low
+**Automatable (Appium):** Yes
+**Test Data:** Fresh app install / cleared app data (no root folder chosen)
+**Steps:**
+ 1. Launch the app on a fresh install, past the splash screen.
+    Expected: Main screen shows the placeholder text "Please choose a root
+    folder " (note the trailing space; replacing the "Choose a root folder
+    to get started!" text previously shown).
 
 ## Epic: Library Playback
 

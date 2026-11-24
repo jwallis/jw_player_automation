@@ -85,6 +85,68 @@ def test_playback_service_get_elapsed_seconds_parses_mm_ss():
     assert service.get_elapsed_seconds() == 135
 
 
+def test_playback_service_get_elapsed_seconds_ignores_total_duration_suffix():
+    driver_wrapper = MagicMock()
+    driver_wrapper.find_by.return_value.text = "02:15 / 01:15:00"
+    library_page = LibraryPage(driver_wrapper)
+    service = PlaybackService(library_page)
+
+    assert service.get_elapsed_seconds() == 135
+
+
+def test_playback_service_get_elapsed_seconds_parses_h_mm_ss():
+    driver_wrapper = MagicMock()
+    driver_wrapper.find_by.return_value.text = "1:00:05"
+    library_page = LibraryPage(driver_wrapper)
+    service = PlaybackService(library_page)
+
+    assert service.get_elapsed_seconds() == 3605
+
+
+def test_playback_service_get_total_seconds_parses_suffix_after_elapsed():
+    driver_wrapper = MagicMock()
+    driver_wrapper.find_by.return_value.text = "00:05 / 01:15"
+    library_page = LibraryPage(driver_wrapper)
+    service = PlaybackService(library_page)
+
+    assert service.get_total_seconds() == 75
+
+
+def test_playback_service_get_total_seconds_raises_when_duration_not_shown_yet():
+    driver_wrapper = MagicMock()
+    driver_wrapper.find_by.return_value.text = "00:05"
+    library_page = LibraryPage(driver_wrapper)
+    service = PlaybackService(library_page)
+
+    try:
+        service.get_total_seconds()
+        assert False, "expected ValidationError"
+    except ValidationError:
+        pass
+
+
+def test_playback_service_validates_total_duration_within_tolerance():
+    driver_wrapper = MagicMock()
+    driver_wrapper.find_by.return_value.text = "00:05 / 01:15"
+    library_page = LibraryPage(driver_wrapper)
+    service = PlaybackService(library_page)
+
+    service.validate_total_duration_within(75, tolerance_seconds=3)  # should not raise
+
+
+def test_playback_service_validation_fails_when_total_duration_outside_tolerance():
+    driver_wrapper = MagicMock()
+    driver_wrapper.find_by.return_value.text = "00:05 / 01:15"
+    library_page = LibraryPage(driver_wrapper)
+    service = PlaybackService(library_page)
+
+    try:
+        service.validate_total_duration_within(30, tolerance_seconds=3)
+        assert False, "expected ValidationError"
+    except ValidationError:
+        pass
+
+
 def test_playback_service_validates_elapsed_time_is_zero():
     driver_wrapper = MagicMock()
     driver_wrapper.find_by.return_value.text = "00:00"

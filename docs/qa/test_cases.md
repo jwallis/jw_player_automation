@@ -581,6 +581,35 @@ TC IDs below reference files from this tree by name.
     Expected: Elapsed time jumps to approximately "00:18" (50% of
     song_b.mp3's own ~35s duration), not a position computed from
     song_a.mp3's ~75s duration.
+---
+### PLAYER_TC-052: Mini player shows the track's total duration next to the elapsed time
+**Story:** JWP-44
+**Jira Issue ID:** JWP-44
+**Priority:** Medium
+**Automatable (Appium):** Yes
+**Test Data:** Root/genre_c/artist_a/song_a.mp3 (~75s)
+**Steps:**
+ 1. Play song_a.mp3 and wait for the elapsed time to begin advancing.
+    Expected: The elapsed time text reads "<elapsed> / <total>" (e.g.
+    "00:05 / 01:15") - the track's own duration shown after a " / "
+    separator, not just the bare elapsed value.
+---
+### PLAYER_TC-053: Elapsed and total time switch from MM:SS to H:MM:SS once playback passes the one-hour mark
+**Story:** JWP-44
+**Jira Issue ID:** JWP-44
+**Priority:** Low
+**Automatable (Appium):** No (would require an audio fixture file longer
+                       than an hour and holding playback/seek for that
+                       long to observe in a test run, impractical in
+                       practice, same reasoning as the white-noise loop
+                       case above)
+**Test Data:** An audio file with a duration over one hour
+**Steps:**
+ 1. Play a track over an hour long and let (or seek) elapsed time past the
+    one-hour mark.
+    Expected: The elapsed time text switches format from "MM:SS / MM:SS"
+    to "H:MM:SS / H:MM:SS" (e.g. "1:00:05 / 1:05:00") for both the elapsed
+    and total components together.
 
 ## Epic: White Noise
 

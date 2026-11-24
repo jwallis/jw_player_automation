@@ -22,6 +22,8 @@ FIRST_SONG_PATH = "/genre_c/artist_a/song_a.mp3"
 SECOND_SONG_NAME = "song_b.mp3"
 SECOND_SONG_MIDPOINT_SECONDS = 18
 MIDPOINT_TOLERANCE_SECONDS = 4
+FIRST_SONG_DURATION_SECONDS = 75
+DURATION_TOLERANCE_SECONDS = 10
 
 
 def test_PLAYER_TC_050_seek_bar_uses_currently_playing_tracks_duration(driver_wrapper: DriverWrapper):
@@ -44,3 +46,21 @@ def test_PLAYER_TC_050_seek_bar_uses_currently_playing_tracks_duration(driver_wr
 
     service.seek_to_fraction(0.5)
     service.validate_elapsed_time_within(SECOND_SONG_MIDPOINT_SECONDS, tolerance_seconds=MIDPOINT_TOLERANCE_SECONDS)
+
+
+def test_PLAYER_TC_052_mini_player_shows_total_time_next_to_elapsed_time(driver_wrapper: DriverWrapper):
+    permissions_page = NotificationPermissionDialogPage(driver_wrapper)
+    PermissionsService(permissions_page).allow_notifications()
+
+    library_page = LibraryPage(driver_wrapper)
+    library_page.open_settings()
+
+    settings_page = SettingsPage(driver_wrapper)
+    SettingsService(settings_page).set_root_folder(ROOT_FOLDER_PATH)
+    settings_page.click_back()
+
+    service = PlaybackService(library_page)
+    service.play_song(FIRST_SONG_PATH)
+    service.wait_for_elapsed_time_to_advance()
+
+    service.validate_total_duration_within(FIRST_SONG_DURATION_SECONDS, tolerance_seconds=DURATION_TOLERANCE_SECONDS)

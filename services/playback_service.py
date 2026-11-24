@@ -74,10 +74,43 @@ class PlaybackService:
         if song_name not in now_playing:
             raise ValidationError(f"Expected {song_name!r} to be playing, but got {now_playing!r}")
 
+    @staticmethod
+    def _parse_time_text(time_text: str) -> int:
+        """Parses a bare "MM:SS" or "H:MM:SS" time value into total seconds."""
+        parts = [int(part) for part in time_text.split(":")]
+        if len(parts) == 3:
+            hours, minutes, seconds = parts
+        else:
+            hours = 0
+            minutes, seconds = parts
+        return hours * 3600 + minutes * 60 + seconds
+
     def get_elapsed_seconds(self) -> int:
-        """Parses the "MM:SS" elapsed_time_text into total seconds."""
-        minutes, seconds = self.library_page.get_elapsed_time_text().split(":")
-        return int(minutes) * 60 + int(seconds)
+        """Parses the elapsed component of elapsed_time_text - "MM:SS" or
+        "H:MM:SS" once playback passes an hour - ignoring the optional
+        " / <total>" suffix shown once the track's duration is known."""
+        elapsed_text = self.library_page.get_elapsed_time_text().split(" / ")[0]
+        return self._parse_time_text(elapsed_text)
+
+    def get_total_seconds(self) -> int:
+        """Parses the total-duration component (after the " / ") of
+        elapsed_time_text. Raises if the track's duration isn't known yet,
+        i.e. the text has no " / <total>" suffix."""
+        display_text = self.library_page.get_elapsed_time_text()
+        if " / " not in display_text:
+            raise ValidationError(
+                f'Expected elapsed time text to include a total duration ("<elapsed> / <total>"), '
+                f"but got {display_text!r}"
+            )
+        _, total_text = display_text.split(" / ", 1)
+        return self._parse_time_text(total_text)
+
+    def validate_total_duration_within(self, expected_seconds: int, tolerance_seconds: int = 3) -> None:
+        total = self.get_total_seconds()
+        if abs(total - expected_seconds) > tolerance_seconds:
+            raise ValidationError(
+                f"Expected total duration within {tolerance_seconds}s of {expected_seconds}s, but got {total}s"
+            )
 
     def validate_elapsed_time_is_zero(self) -> None:
         elapsed = self.get_elapsed_seconds()
